@@ -210,6 +210,10 @@ line-height: 1em;
 margin: 0;
 }
 
+.leaflet-popup-content-wrapper {
+  box-shadow: 0 3px 14px #777;
+}
+
 @media (max-width: 576px) and (orientation: portrait) {
 #title {
 display: none;
