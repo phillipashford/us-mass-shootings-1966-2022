@@ -4,6 +4,13 @@
     'use strict';
 
     ////////////////////////////////////////
+    ////////// INDEX ///////////////////////
+    ////////////////////////////////////////
+
+    ////////// COLOR MODIFICATIONS
+    // Ctrl + f >> "@COLOR"
+
+    ////////////////////////////////////////
     ////////// INITIALIZATION //////////////
     ////////////////////////////////////////
 
@@ -50,8 +57,8 @@
     const hfrBreaksRange = [];
     // Define variables to draw the initial map
     var currentYear = 1990
-    var currentLayer = 'Permit-to-Purchase';
-    // var currentLayer = 'Gun Ownership';
+    // var currentLayer = 'Permit-to-Purchase';
+    var currentLayer = 'Gun Ownership';
 
     ////////////////////////////////////////
     ////////// MAP INSTANTIATION ///////////
@@ -75,29 +82,33 @@
         position: 'bottomright',
     }).addTo(map);
 
-    // // Create a pane for the GeoJSON layer
-    // map.createPane('geojsonPane');
-    // map.getPane('geojsonPane').style.zIndex = 400;
+// Create a pane for the GeoJSON layer
+map.createPane('geojsonPane');
+map.getPane('geojsonPane').style.zIndex = 300;
 
-    // // Create a pane for the labels layer
-    // map.createPane('labelsPane');
-    // map.getPane('labelsPane').style.zIndex = 500;
+// Create a pane for the labels layer
+map.createPane('labelsPane');
+map.getPane('labelsPane').style.zIndex = 400;
 
-    var CartoDB_PositronNoLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+// Create a pane for the circle markers layer
+map.createPane('circlesPane');
+map.getPane('circlesPane').style.zIndex = 500;
+
+    var CartoDB_DarkMatterNoLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 20,
-        // pane: 'geojsonPane'
+        pane: 'geojsonPane'
     });
 
-    var CartoDB_PositronOnlyLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+    var CartoDB_DarkMatterOnlyLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 20,
-        // pane: 'labelsPane'
+        pane: 'labelsPane'
     });
 
-    CartoDB_PositronNoLabels.addTo(map);
+    CartoDB_DarkMatterNoLabels.addTo(map);
 
 ////////////////////////////////////////
 ////////// FETCH AND PARSE DATA ////////
@@ -191,8 +202,8 @@ Promise.all([
         // console.log(hfrRangeMax);
         // console.log(hfrRangeMin);
 
-        // Create color generator function
-        var colorize = chroma.scale(['#ccc', 'grey']).domain([hfrRangeMin, hfrRangeMax])
+        // Create color generator function @COLOR
+        var colorize = chroma.scale(['#777', '#222']).domain([hfrRangeMin, hfrRangeMax])
             .classes(breaks)
             .mode('lab');
 
@@ -215,9 +226,9 @@ Promise.all([
         const leafletGeojsonObject = L.geoJson(states, {
             style: function (feature) {
                 return {
-                    color: "#fff",
-                    weight: 0.75,
-                    fillOpacity: 0.9,
+                    color: "#fff", //@COLOR
+                    weight: 0.25,
+                    fillOpacity: 0.75,
                 };
             },
             //////////////////// GEOJSON EVENT LISTENERS ////////////////////
@@ -230,8 +241,8 @@ Promise.all([
                     // change the style
                     layer
                         .setStyle({
-                            weight: 2,
-                            fillOpacity: 1
+                            weight: 0.5,
+                            fillOpacity: 0.9
                         })
                         // .bringToFront();
                 });
@@ -240,8 +251,8 @@ Promise.all([
                 layer.on("mouseout", function () {
                     // reset the layer style
                     layer.setStyle({
-                        weight: 0.75,
-                        fillOpacity: 0.9
+                        weight: 0.25,
+                        fillOpacity: 0.75
                     });
                 });
             }
@@ -264,8 +275,8 @@ Promise.all([
                     // and if there is HFR data for the geojson feature 
                     if (stateGunData[props.NAME][currentYear].HFR) {
                         // then style as...
-                        fillColor = colorize(Number(stateGunData[props.NAME][currentYear].HFR))
-                        stateLineColor = 'white';
+                        fillColor = colorize(Number(stateGunData[props.NAME][currentYear].HFR)) // @COLOR
+                        stateLineColor = '#555'; // @COLOR
                         // and configure popup
                         popup +=
                         `${((stateGunData[props.NAME][currentYear].HFR) * 100).toFixed()}%  *</h2>
@@ -283,15 +294,14 @@ Promise.all([
                     // and if there is gun law data for the geojson feature
                     if (stateGunData[props.NAME]) {
                         // and if the state has a 'permit-to-purchase' law... 
-                        console.log(stateGunData[props.NAME][currentYear].PERMIT);
                         if (stateGunData[props.NAME][currentYear].PERMIT != undefined) {
                             stateLineColor = 'black';
                             if (stateGunData[props.NAME][currentYear].PERMIT == true) {
                                 // then style as...
-                                fillColor = "#ccc";
+                                fillColor = "#ccc"; //@COLOR
                             } else {
                                 // else PERMIT must be false -> style as...
-                                fillColor = "grey";
+                                fillColor = "grey"; // @COLOR
                             }
                             // and configure popup
                             popup += 
@@ -307,8 +317,8 @@ Promise.all([
             layer.setStyle({
                 weight: .75,
                 opacity: 1,
-                color: stateLineColor || "tan",
-                fillColor: fillColor || "tan"
+                color: stateLineColor || "tan", // @COLOR
+                fillColor: fillColor || "tan" // @COLOR
             });
 
             // Add a popup to the layer with additional information
@@ -316,49 +326,106 @@ Promise.all([
 
         });
 
+        // shootings.forEach(shooting => {
+        //     const date = new Date(shooting['date']).getFullYear();
+        //     const recency = (new Date().getFullYear() - date);
+
+        //     if (shooting['summary']) {
+        //         var circleColor = "#840000"; // @COLOR
+        //     } else {
+        //         var circleColor = "#9c3131"; // @COLOR
+        //     }
+
+        //     // Create a circle marker and add it to the map
+        //     const circleMarker = L.circleMarker([shooting['coordinates'][0], shooting['coordinates'][1]], {
+        //         radius: calcRadius(shooting['total_victims']),
+        //         color: circleColor,
+        //         weight: recency < 30 ? 1 : 0.5,
+        //         fillOpacity: 0.5 - (recency / 100),
+        //         pane: 'circlesPane'
+        //     }).addTo(map);
+
+        //     //////////////////// CIRCLE MARKERS EVENT LISTENERS ////////////////////
+
+        //     // when mousing over a layer
+        //     circleMarker.on("mouseover", function () {
+        //         // change the style
+        //         circleMarker
+        //             .setStyle({
+        //                 weight: 2
+        //             })
+        //             // .bringToFront();
+        //     });
+
+        //     // on mousing off layer
+        //     circleMarker.on("mouseout", function () {
+        //         // reset the layer style
+        //         circleMarker.setStyle({
+        //             weight: recency < 30 ? 1 : 0.5
+        //         });
+        //     });
+
+        //     // Add a popup to the marker with additional information
+        //     var popup =
+        //         `<h3>${shooting['location']}</h3>
+        //     <p>${shooting['dateString']}</p><hr>`;
+
+        //     if (shooting['summary'] != "") {
+        //         popup += `<p>${shooting['summary']}</p>`;
+        //     } else {
+        //         popup +=
+        //             `<p>${shooting['fatalities']} deaths</p>
+        //      <p>${shooting['injured']} injuries</p>`;
+        //     }
+
+        //     circleMarker.bindPopup(popup);
+                        
+        // });
+
+//////////////////// CIRCLE MARKERS  ////////////////////
+
         shootings.forEach(shooting => {
             const date = new Date(shooting['date']).getFullYear();
             const recency = (new Date().getFullYear() - date);
-
+        
             if (shooting['summary']) {
-                var circleColor = "darkred";
+                var circleColor = "#840000"; // @COLOR
             } else {
-                var circleColor = "red";
+                var circleColor = "#9c3131"; // @COLOR
             }
-
-            // Create a circle marker and add it to the map
-            const circleMarker = L.circleMarker([shooting['coordinates'][0], shooting['coordinates'][1]], {
-                radius: calcRadius(shooting['total_victims']),
-                color: circleColor,
-                weight: recency < 30 ? 1 : 0.5,
-                fillOpacity: 0.5 - (recency / 100),
+        
+            // Create a custom icon for the crosshair marker
+            const crosshairIcon = L.icon({
+                iconUrl: 'img/icon.svg', // Replace with your icon URL
+                iconSize: [calcRadius(shooting['total_victims']) * 2, calcRadius(shooting['total_victims']) * 2], // Adjust size based on victims
+                iconAnchor: [calcRadius(shooting['total_victims']), calcRadius(shooting['total_victims'])], // Center the icon
+            });
+        
+            // Create a crosshair marker and add it to the map
+            const crosshairMarker = L.marker([shooting['coordinates'][0], shooting['coordinates'][1]], {
+                icon: crosshairIcon,
+                pane: 'circlesPane'
             }).addTo(map);
-
+        
             //////////////////// CIRCLE MARKERS EVENT LISTENERS ////////////////////
-
+        
             // when mousing over a layer
-            circleMarker.on("mouseover", function () {
+            crosshairMarker.on("mouseover", function () {
                 // change the style
-                circleMarker
-                    .setStyle({
-                        weight: 2
-                    })
-                    // .bringToFront();
+                crosshairMarker.getElement().style.border = '2px solid ' + circleColor;
             });
-
+        
             // on mousing off layer
-            circleMarker.on("mouseout", function () {
+            crosshairMarker.on("mouseout", function () {
                 // reset the layer style
-                circleMarker.setStyle({
-                    weight: recency < 30 ? 1 : 0.5
-                });
+                crosshairMarker.getElement().style.border = '1px solid ' + circleColor;
             });
-
+        
             // Add a popup to the marker with additional information
             var popup =
                 `<h3>${shooting['location']}</h3>
             <p>${shooting['dateString']}</p><hr>`;
-
+        
             if (shooting['summary'] != "") {
                 popup += `<p>${shooting['summary']}</p>`;
             } else {
@@ -366,10 +433,13 @@ Promise.all([
                     `<p>${shooting['fatalities']} deaths</p>
              <p>${shooting['injured']} injuries</p>`;
             }
-
-            circleMarker.bindPopup(popup);
-                        
+        
+            crosshairMarker.bindPopup(popup);
         });
+        
+
+        // Add labels layer 
+        CartoDB_DarkMatterOnlyLabels.addTo(map);
     
         //////////////////// FUNCTION CALLS ////////////////////    
 
