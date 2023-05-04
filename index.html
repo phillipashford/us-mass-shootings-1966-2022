@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Map with Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css" />
+    
+</head>
+<body>
+    <div id="map"></div>
+    <div id="legend">
+        <button id="toggle-layer">Toggle Layer</button>
+        <input type="range" id="year-slider" min="1966" max="2021" value="1966">
+        <button id="supplemental-module">Supplemental Module</button>
+    </div>
+    <!-- Include the Papa Parse library via a script tag -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.1/papaparse.min.js"></script>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.2/chroma.min.js"
+    integrity="sha512-8TVPS0EFkkmtT6yPb5K4csnSt3tjbKRrs0F8gvTNKv2OxOcwDO7+Klkz86gMVrzfqtZos5N2a+k+r9D+hlccmQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="data/violence-project-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
