@@ -57,10 +57,15 @@
     const hfrBreaksRange = [];
     // Define variables to draw the initial map
     var currentYear = 2020;
-    // var currentLayer = 'Permit-to-Purchase';
+
     var currentLayer = 'Gun Ownership';
 
     var toggleAllShootings = true;
+
+    var scaleColors = ['#bbb', '#555']; // min to max >>>
+
+    var noDataColor = "#222";
+
 
 
     ////////////////////////////////////////
@@ -112,6 +117,8 @@
     });
 
     CartoDB_DarkMatterNoLabels.addTo(map);
+    CartoDB_DarkMatterOnlyLabels.addTo(map);
+
 
     ////////////////////////////////////////
     ////////// FETCH AND PARSE DATA ////////
@@ -206,15 +213,14 @@
         // console.log(hfrRangeMin);
 
         // Create color generator function @COLOR
-        var colorize = chroma.scale(['#777', '#222']).domain([hfrRangeMin, hfrRangeMax])
+        var colorize = chroma.scale(scaleColors).domain([hfrRangeMin, hfrRangeMax])
             .classes(breaks)
             .mode('lab');
 
         //////////////////// FUNCTION CALLS ////////////////////    
 
         // Send processed data along with the geojson to the drawMap function where it will be added to the map and styled
-        drawMap(stateGunData, states, colorize);
-        drawLegend(breaks, colorize);
+        drawMap(stateGunData, states, colorize, breaks);
 
     } // End processData()
 
@@ -222,7 +228,7 @@
     ////// DRAWING THE MAP ////////
     ////////////////////////////////////////
 
-    function drawMap(stateGunData, states, colorize, currentYear) {
+    function drawMap(stateGunData, states, colorize, breaks) {
 
         //////////////////// ADD GEOJSON LAYER ////////////////////
 
@@ -261,8 +267,10 @@
             }
         }).addTo(map);
 
-        updateMap(stateGunData, leafletGeojsonObject, colorize);
-        createSliderUI(stateGunData, leafletGeojsonObject, colorize);
+        drawLayers(stateGunData, leafletGeojsonObject, colorize);
+        createSliderUI(stateGunData, leafletGeojsonObject, breaks, colorize);
+        drawCircleMarkers(stateGunData);
+        drawLegend(breaks, colorize, leafletGeojsonObject, stateGunData);
 
     } // End drawMap()
 
@@ -271,78 +279,9 @@
         return radius * 3; // adjust .25 as a scale factor
     }
 
-    function updateMap(stateGunData, leafletGeojsonObject, colorize) {
-
-        //////////////////// JOIN GEOJSON FEATURES TO GUN DATA & STYLE ACCORDINGLY ////////////////////
-
-        leafletGeojsonObject.eachLayer(function (layer) {
-            // var feature = layer.feature;
-            var fillColor;
-            var stateLineColor;
-            var props = layer.feature.properties;
-            var popup = `<h1>${props.NAME}'s ${currentLayer}</h1>
-        <h2>${currentYear} | `;
-
-            // if the currentLayer is 'Gun Ownership'
-            if (currentLayer == 'Gun Ownership') {
-                // and if there is gun law data for the geojson feature during the selected year
-                if (stateGunData[props.NAME] && stateGunData[props.NAME][currentYear]) {
-                    // and if there is HFR data for the geojson feature 
-                    if (stateGunData[props.NAME][currentYear].HFR) {
-                        // then style as...
-                        fillColor = colorize(Number(stateGunData[props.NAME][currentYear].HFR)) // @COLOR
-                        stateLineColor = '#555'; // @COLOR
-                        // and configure popup
-                        popup +=
-                            `${((stateGunData[props.NAME][currentYear].HFR) * 100).toFixed()}%  *</h2>
-                    <h5>* Estimate of the proportion of adult, non-institutionalized residents who live in a household with a firearm. <a href="">Learn more</a></h5>`;
-
-                    } else { // if no HFR data
-                        popup += `No data`;
-                    }
-                } else { // if no gun law data (DC, Puerto Rico, etc)
-                    popup += `No data`;
-                }
-
-            } else { // if the currentLayer is not 'Gun Ownership' it must be 'Permit-to-Purchase Law'
-
-                // and if there is gun law data for the geojson feature
-                if (stateGunData[props.NAME]) {
-                    // and if the state has a 'permit-to-purchase' law... 
-                    if (stateGunData[props.NAME][currentYear].PERMIT != undefined) {
-                        stateLineColor = 'black';
-                        if (stateGunData[props.NAME][currentYear].PERMIT == true) {
-                            // then style as...
-                            fillColor = "#ccc"; //@COLOR
-                        } else {
-                            // else PERMIT must be false -> style as...
-                            fillColor = "grey"; // @COLOR
-                        }
-                        // and configure popup
-                        popup +=
-                            `<p>Permit-to-Purchase law: ${stateGunData[props.NAME][currentYear].PERMIT}</p>`;
-                    } else { // if no permit law data
-                        popup += `No data`;
-                    }
-                } else { // if no gun law data (DC, Puerto Rico, etc)
-                    popup += `No data`;
-                }
-            }
-
-            layer.setStyle({
-                weight: .75,
-                opacity: 1,
-                color: stateLineColor || "#bbb", // @COLOR
-                fillColor: fillColor || "#bbb" // @COLOR
-            });
-
-            // Add a popup to the layer with additional information
-            layer.bindPopup(popup);
-
-        });
-
-        // remove all circle markers from the map
-        map.eachLayer(function (layer) {
+    function drawCircleMarkers(stateGunData) {
+           // remove all circle markers from the map
+           map.eachLayer(function (layer) {
             if (layer instanceof L.CircleMarker) {
                 map.removeLayer(layer);
             }
@@ -385,6 +324,7 @@
                         pane: 'circlesPane'
                     }).addTo(map);
                 } else {
+
                 }
             }
 
@@ -427,12 +367,11 @@
             circleMarker.bindPopup(popup);
             }
 
-
-           
         });
 
         toggleAllShootings = false;
 
+        // EXPERIMENTAL ICON CODE - not working right but still going to play with it
         //     (async () => {
         //         shootings.forEach(async (shooting) => {
         //           const date = new Date(shooting["date"]).getFullYear();
@@ -515,9 +454,78 @@
 
         //     return dataUrl;
         //   }
+        // END EXPERIMENTAL ICON CODE
 
-        // Add labels layer 
-        CartoDB_DarkMatterOnlyLabels.addTo(map);
+    }
+
+    function drawLayers(stateGunData, leafletGeojsonObject, colorize) {
+
+        //////////////////// JOIN GEOJSON FEATURES TO GUN DATA & STYLE ACCORDINGLY ////////////////////
+
+        leafletGeojsonObject.eachLayer(function (layer) {
+            // var feature = layer.feature;
+            var fillColor = noDataColor;
+            var stateLineColor = noDataColor;
+            var props = layer.feature.properties;
+            var popup = `<h1>${props.NAME}'s ${currentLayer}</h1>
+        <h2>${currentYear} | `;
+
+            // if the currentLayer is 'Gun Ownership'
+            if (currentLayer == 'Gun Ownership') {
+                // and if there is gun law data for the geojson feature during the selected year
+                if (stateGunData[props.NAME] && stateGunData[props.NAME][currentYear]) {
+                    // and if there is HFR data for the geojson feature 
+                    if (stateGunData[props.NAME][currentYear].HFR) {
+                        // then style as...
+                        fillColor = colorize(Number(stateGunData[props.NAME][currentYear].HFR)) // @COLOR
+                        // and configure popup
+                        popup +=
+                            `${((stateGunData[props.NAME][currentYear].HFR) * 100).toFixed()}%  *</h2>
+                    <h5>* Estimate of the proportion of adult, non-institutionalized residents who live in a household with a firearm. <a href="">Learn more</a></h5>`;
+
+                    } else { // if no HFR data
+                        popup += `No data`;
+                    }
+                } else { // if no gun law data (DC, Puerto Rico, etc)
+                    popup += `No data`;
+                }
+
+            } else { // if the currentLayer is not 'Gun Ownership' it must be 'Permit-to-Purchase Law'
+
+                // and if there is gun law data for the geojson feature during the selected year
+                if (stateGunData[props.NAME] && stateGunData[props.NAME][currentYear]) {
+                    // and if the state has a 'permit-to-purchase' law... 
+                    if (stateGunData[props.NAME][currentYear].PERMIT != undefined) {
+                        stateLineColor = 'black';
+                        if (stateGunData[props.NAME][currentYear].PERMIT == true) {
+                            // then style as...
+                            fillColor = scaleColors[0]; //@COLOR
+
+                        } else {
+                            // else PERMIT must be false -> style as...
+                            fillColor = scaleColors[1]; // @COLOR
+                        }
+                        // and configure popup
+                        popup +=
+                            `<p>Permit-to-Purchase law: ${stateGunData[props.NAME][currentYear].PERMIT}</p>`;
+                    } else { // if no permit law data
+                        popup += `No data`;
+                    }
+                } else { // if no gun law data (DC, Puerto Rico, etc)
+                    popup += `No data`;
+                }
+            }
+
+            layer.setStyle({
+                weight: .5,
+                opacity: 1,
+                fillColor: fillColor,
+                stateLineColor: stateLineColor
+            });
+
+            // Add a popup to the layer with additional information
+            layer.bindPopup(popup);
+        });
 
     } // end updateMap()
 
@@ -525,7 +533,8 @@
     ////////// LEAFLET CONTROLS //////////
     ////////////////////////////////////////
 
-    function drawLegend(breaks, colorize) {
+    function drawLegend(breaks, colorize, leafletGeojsonObject) {
+    
         // create a Leaflet control for the legend
         const legendControl = L.control({
             position: "topright",
@@ -541,38 +550,73 @@
         // add the legend control to the map
         legendControl.addTo(map);
 
-        // select div and create legend title
-        const legend = document.querySelector(".legend");
-        legend.innerHTML = `
-        <div class="button-container"><button>Gun Ownership</button><button style="float:right">Permit Laws</button></div>
-        <h3><span>1989</span>Percentage of residents living in a<br>household with a firearm</h3>`;
+if (currentLayer == "Gun Ownership") {
+            // select div and create legend title
+            const legend = document.querySelector(".legend");
+            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Laws</button></div><h3><span>1989</span>Percentage of residents living in a<br>household with a firearm</h3>`;
+    
+            // I changed the structure here because the browser was closing the ul tag early for some reason (before the loop ran) and it was offsetting the spans in the legend.
+            let listItems = `<li><span style="background:${noDataColor}"></span> No Data </li>`;
+    
+            // loop through the break values and concatenate listItems string
+            for (let i = 0; i < breaks.length - 1; i++) {
+    
+                const color = colorize(breaks[i], breaks);
+    
+                // create legend item
+                const classRange = `<li><span style="background:${color}"></span>
+            ${(breaks[i] * 100).toFixed()}% &mdash;
+            ${(breaks[i + 1] * 100).toFixed()}%</li>`;
+    
+                // append to legend unordered list item
+                listItems += classRange;
+            }
+    
+            // creates the unordered list and adds the list items to i
+            const unorderedList = `<ul>${listItems}<li></li></ul>`;
+    
+            // adds the unordered list to the legend
+            legend.innerHTML += unorderedList;
+} else {
+            // select div and create legend title
+            const legend = document.querySelector(".legend");
+            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Laws</button></div><h3><span>1989</span>States with a Permit-to-Purchase Law</h3>`;
+    
+            // I changed the structure here because the browser was closing the ul tag early for some reason (before the loop ran) and it was offsetting the spans in the legend.
+            let unorderedList = `<ul><li><span style="background:${noDataColor}"></span> No Data </li>
+            <li><span style="background:${scaleColors[0]}"></span>Has P-to-P Law</li>
+            <li><span style="background:${scaleColors[1]}"></span>No P-to-P Law</li>`;
+    
+            // adds the unordered list to the legend
+            legend.innerHTML += unorderedList;
+}
 
-        // I changed the structure here because the browser was closing the ul tag early for some reason (before the loop ran) and it was offsetting the spans in the legend.
-        let listItems = `<li><span style="background:#bbb"></span> No Data </li>`;
+        // References and stores gun ownership button
+        var gunOwnershipButton = document.querySelector("#ownership");
 
-        // loop through the break values and concatenate listItems string
-        for (let i = 0; i < breaks.length - 1; i++) {
+        // References and stores permit laws button
+        var permitButton = document.querySelector("#permit");
 
-            const color = colorize(breaks[i], breaks);
+        // Toggles all shooting circle markers on after slider changes
+        gunOwnershipButton.addEventListener("click", function() {
+            currentLayer = "Gun Ownership";
+            drawLayers(stateGunData, leafletGeojsonObject, colorize, currentYear);
+                    // Removes pre-existing legends
+        map.removeControl(legendControl);
+            drawLegend(breaks, colorize, leafletGeojsonObject)
+        });
 
-            // create legend item
-            const classRange = `<li><span style="background:${color}"></span>
-        ${(breaks[i] * 100).toFixed()}% &mdash;
-        ${(breaks[i + 1] * 100).toFixed()}%</li>`;
-
-            // append to legend unordered list item
-            listItems += classRange;
-        }
-
-        // creates the unordered list and adds the list items to i
-        const unorderedList = `<ul>${listItems}<li></li></ul>`;
-
-        // adds the unordered list to the legend
-        legend.innerHTML += unorderedList;
+        permitButton.addEventListener("click", function() {
+            currentLayer = "Permit Laws";
+            drawLayers(stateGunData, leafletGeojsonObject, colorize, currentYear);
+                    // Removes pre-existing legends
+        map.removeControl(legendControl);
+            drawLegend(breaks, colorize, leafletGeojsonObject)
+        });
 
     } // end drawLegend()
 
-    function createSliderUI(dataLayer, leafletGeojsonObject, colorize) {
+    function createSliderUI(stateGunData, leafletGeojsonObject, breaks, colorize) {
 
         // create Leaflet control for the slider
         const sliderControl = L.control({ position: "bottomleft" });
@@ -604,8 +648,10 @@
         slider.addEventListener("input", function (e) {
             // get the value of the selected option
             currentYear = e.target.value;
-            // update the map with current timestamp
-            updateMap(stateGunData, leafletGeojsonObject, colorize, currentYear);
+            // update the layers with current timestamp
+            drawLayers(stateGunData, leafletGeojsonObject, colorize, currentYear);
+            // update the circle markers with current timestamp
+            drawCircleMarkers(stateGunData, leafletGeojsonObject, colorize, currentYear);
             // update timestamp in legend heading
             document.querySelector(".legend h3 span").innerHTML = currentYear;
             // update the year
@@ -618,8 +664,25 @@
         // Toggles all shooting circle markers on after slider changes
         allShootingsToggleButton.addEventListener("click", function() {
             toggleAllShootings = true;
-            updateMap(stateGunData, leafletGeojsonObject, colorize, currentYear);
+            drawCircleMarkers(stateGunData, leafletGeojsonObject, colorize, currentYear);
         });
+
+        // // References and stores gun ownership button
+        // var gunOwnershipButton = document.querySelector("#ownership");
+
+        // // References and stores permit laws button
+        // var permitButton = document.querySelector("#permit");
+
+        // // Toggles all shooting circle markers on after slider changes
+        // gunOwnershipButton.addEventListener("click", function() {
+        //     currentLayer = "Gun Ownership";
+        //     updateMap(stateGunData, leafletGeojsonObject, colorize, currentYear);
+        // });
+
+        // permitButton.addEventListener("click", function() {
+        //     currentLayer = "Permit Laws";
+        //     updateMap(stateGunData, leafletGeojsonObject, colorize, currentYear);
+        // });
 
         // // Initiate autoplay state
         // var autoplay;
