@@ -6,7 +6,8 @@ body {
 margin: 0;
 padding: 0;
 background: rgba(193, 192, 192, 0.8);
-font-family: 'Open Sans', sans-serif;
+font-family: 'Archivo', sans-serif;
+font-family: 'Archivo Black', sans-serif;
 color: #003049;
 font-size: 100%;
 }
@@ -19,8 +20,8 @@ left: 15px;
 padding: 8px 15px;
 margin: 0;
 color: #003049;
-font-family: 'Della Respira';
-background: rgba(193, 192, 192, 0.8);
+font-family: 'Archivo Black';
+background: #ddd;
 box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 border-radius: 5px;
 text-transform: uppercase;
@@ -36,11 +37,11 @@ cursor: pointer;
 }
 
 #modal-button:hover {
-background: #34a0a4;
+background: #9c3131;
 }
 
 #modal-button:active {
-background: #7ab99f;
+background: #840000";
 }
 
 #map {
@@ -81,7 +82,7 @@ color: #003049;
 }
 
 #modal a:hover {
-color: #34a0a4;
+color: #9c3131;
 }
 
 #modal div {
@@ -112,16 +113,16 @@ cursor: pointer;
 }
 
 #modal h3 {
-font-family: 'Della Respira';
+font-family: 'Archivo Black';
 text-transform: uppercase;
 font-size: 1em;
 }
 
 .legend {
 padding: 6px 8px;
-font-family: 'Della Respira';
+font-family: 'Archivo';
 font-size: 1em;
-background: rgba(193, 192, 192, 0.8);
+background: #ddd;
 color: #003049;
 box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 border-radius: 5px;
@@ -149,6 +150,10 @@ padding: 0;
 margin: 12px 4px 0;
 }
 
+.legend h4 {
+  display: inline-block;
+}
+
 .legend li {
 height: 22px;
 }
@@ -160,11 +165,27 @@ float: left;
 margin-right: 10px;
 }
 
+.legend .button-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+
+.legend .button {
+  padding: 10px;
+  border: none;
+  background-color: #ccc;
+  color: #000;
+  font-size: 20px;
+  flex: 1;
+}
+
 #ui-controls {
-font-family: 'Della Respira';
+font-family: 'Archivo';
 width: 176px;
 padding: 8px 25px 8px 15px;
-background: rgba(193, 192, 192, 0.8);
+background: #ddd;
 box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 border-radius: 5px;
 color: whitesmoke;
@@ -183,10 +204,10 @@ margin-right: -15px;
 width: 100%;
 }
 
-#ui-controls button {
-background: rgba(193, 192, 192, 0.8);
-font-family: 'Della Respira';
-box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+#ui-controls button, .legend button {
+background: #DDD;
+font-family: 'Archivo';
+box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 border-radius: 5px;
 color: #003049;
 }
@@ -201,8 +222,7 @@ pointer-events: none !important;
 }
 
 #current-year {
-float: right;
-font-family: 'Della Respira';
+font-family: 'Archivo';
 font-size: 2em;
 color: #003049;
 font-weight: bold;
@@ -212,7 +232,10 @@ margin: 0;
 
 .leaflet-popup-content-wrapper {
   box-shadow: 0 3px 14px #777;
+  background-color: #ddd;
 }
+
+img svg
 
 @media (max-width: 576px) and (orientation: portrait) {
 #title {
