@@ -10,23 +10,23 @@
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
     integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Della+Respira&family=Open+Sans&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo&family=Archivo+Black&display=swap" rel="stylesheet">
   <link href="css/styles.css" rel="stylesheet">
 </head>
 
 <body>
-  <h1 id="title">Residential Electrical Usage from Solar: 1989 &ndash; 2020</h1>
+  <h1 id="title">Residential Electrical Usage from Solar: 1966 &ndash; 2020</h1>
   <h2 id="modal-button">Info</h2>
   <div id="map"></div>
   <!-- <div id="hawaiiMap"></div> -->
   <div id="ui-controls">
     <label for="slider"></label>
-    <input id="slider" type="range" min="1989" max="2020" value="1989" step="1" class="year-slider">
+    <input id="slider" type="range" min="1966" max="2020" value="2020" step="1" class="year-slider">
     </input>
-    <button id="autoplay-toggle">Play</button>
-    <span id="current-year">1989</span>
+    <span id="current-year">2020</span><br><br>
+    <button id="all-shootings-toggle">See All Shootings</button>
   </div>
   <div id="modal">
     <div class="container">
