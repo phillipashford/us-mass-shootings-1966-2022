@@ -216,7 +216,7 @@ Promise.all([
     } // End processData()
 
     ////////////////////////////////////////
-    ////// DRAWING/UPDATING THE MAP ////////
+    ////// DRAWING THE MAP ////////
     ////////////////////////////////////////
 
     function drawMap(stateGunData, states, colorize) {
@@ -258,193 +258,8 @@ Promise.all([
             }
         }).addTo(map);
     
-    //////////////////// JOIN GEOJSON FEATURES TO GUN DATA & STYLE ACCORDINGLY ////////////////////
-
-        leafletGeojsonObject.eachLayer(function(layer) {
-            // var feature = layer.feature;
-            var fillColor;
-            var stateLineColor;
-            var props = layer.feature.properties;
-            var popup = `<h1>${props.NAME}'s ${currentLayer}</h1>
-            <h2>${currentYear} | `;
-    
-            // if the currentLayer is 'Gun Ownership'
-            if (currentLayer == 'Gun Ownership') {
-                // and if there is gun law data for the geojson feature
-                if (stateGunData[props.NAME]) {
-                    // and if there is HFR data for the geojson feature 
-                    if (stateGunData[props.NAME][currentYear].HFR) {
-                        // then style as...
-                        fillColor = colorize(Number(stateGunData[props.NAME][currentYear].HFR)) // @COLOR
-                        stateLineColor = '#555'; // @COLOR
-                        // and configure popup
-                        popup +=
-                        `${((stateGunData[props.NAME][currentYear].HFR) * 100).toFixed()}%  *</h2>
-                        <h5>* Estimate of the proportion of adult, non-institutionalized residents who live in a household with a firearm. <a href="">Learn more</a></h5>`;
-
-                } else { // if no HFR data
-                    popup += `No data`;
-                } 
-              } else { // if no gun law data (DC, Puerto Rico, etc)
-                    popup += `No data`;
-              }
-
-            } else { // if the currentLayer is not 'Gun Ownership' it must be 'Permit-to-Purchase Law'
-
-                    // and if there is gun law data for the geojson feature
-                    if (stateGunData[props.NAME]) {
-                        // and if the state has a 'permit-to-purchase' law... 
-                        if (stateGunData[props.NAME][currentYear].PERMIT != undefined) {
-                            stateLineColor = 'black';
-                            if (stateGunData[props.NAME][currentYear].PERMIT == true) {
-                                // then style as...
-                                fillColor = "#ccc"; //@COLOR
-                            } else {
-                                // else PERMIT must be false -> style as...
-                                fillColor = "grey"; // @COLOR
-                            }
-                            // and configure popup
-                            popup += 
-                            `<p>Permit-to-Purchase law: ${stateGunData[props.NAME][currentYear].PERMIT}</p>`;
-                        } else { // if no permit law data
-                            popup += `No data`;
-                        } 
-                } else { // if no gun law data (DC, Puerto Rico, etc)
-                    popup += `No data`;
-                }
-            }
-            
-            layer.setStyle({
-                weight: .75,
-                opacity: 1,
-                color: stateLineColor || "tan", // @COLOR
-                fillColor: fillColor || "tan" // @COLOR
-            });
-
-            // Add a popup to the layer with additional information
-            layer.bindPopup(popup);
-
-        });
-
-        // shootings.forEach(shooting => {
-        //     const date = new Date(shooting['date']).getFullYear();
-        //     const recency = (new Date().getFullYear() - date);
-
-        //     if (shooting['summary']) {
-        //         var circleColor = "#840000"; // @COLOR
-        //     } else {
-        //         var circleColor = "#9c3131"; // @COLOR
-        //     }
-
-        //     // Create a circle marker and add it to the map
-        //     const circleMarker = L.circleMarker([shooting['coordinates'][0], shooting['coordinates'][1]], {
-        //         radius: calcRadius(shooting['total_victims']),
-        //         color: circleColor,
-        //         weight: recency < 30 ? 1 : 0.5,
-        //         fillOpacity: 0.5 - (recency / 100),
-        //         pane: 'circlesPane'
-        //     }).addTo(map);
-
-        //     //////////////////// CIRCLE MARKERS EVENT LISTENERS ////////////////////
-
-        //     // when mousing over a layer
-        //     circleMarker.on("mouseover", function () {
-        //         // change the style
-        //         circleMarker
-        //             .setStyle({
-        //                 weight: 2
-        //             })
-        //             // .bringToFront();
-        //     });
-
-        //     // on mousing off layer
-        //     circleMarker.on("mouseout", function () {
-        //         // reset the layer style
-        //         circleMarker.setStyle({
-        //             weight: recency < 30 ? 1 : 0.5
-        //         });
-        //     });
-
-        //     // Add a popup to the marker with additional information
-        //     var popup =
-        //         `<h3>${shooting['location']}</h3>
-        //     <p>${shooting['dateString']}</p><hr>`;
-
-        //     if (shooting['summary'] != "") {
-        //         popup += `<p>${shooting['summary']}</p>`;
-        //     } else {
-        //         popup +=
-        //             `<p>${shooting['fatalities']} deaths</p>
-        //      <p>${shooting['injured']} injuries</p>`;
-        //     }
-
-        //     circleMarker.bindPopup(popup);
-                        
-        // });
-
-//////////////////// CIRCLE MARKERS  ////////////////////
-
-        shootings.forEach(shooting => {
-            const date = new Date(shooting['date']).getFullYear();
-            const recency = (new Date().getFullYear() - date);
-        
-            if (shooting['summary']) {
-                var circleColor = "#840000"; // @COLOR
-            } else {
-                var circleColor = "#9c3131"; // @COLOR
-            }
-        
-            // Create a custom icon for the crosshair marker
-            const crosshairIcon = L.icon({
-                iconUrl: 'img/icon.svg', // Replace with your icon URL
-                iconSize: [calcRadius(shooting['total_victims']) * 2, calcRadius(shooting['total_victims']) * 2], // Adjust size based on victims
-                iconAnchor: [calcRadius(shooting['total_victims']), calcRadius(shooting['total_victims'])], // Center the icon
-            });
-        
-            // Create a crosshair marker and add it to the map
-            const crosshairMarker = L.marker([shooting['coordinates'][0], shooting['coordinates'][1]], {
-                icon: crosshairIcon,
-                pane: 'circlesPane'
-            }).addTo(map);
-        
-            //////////////////// CIRCLE MARKERS EVENT LISTENERS ////////////////////
-        
-            // when mousing over a layer
-            crosshairMarker.on("mouseover", function () {
-                // change the style
-                crosshairMarker.getElement().style.border = '2px solid ' + circleColor;
-            });
-        
-            // on mousing off layer
-            crosshairMarker.on("mouseout", function () {
-                // reset the layer style
-                crosshairMarker.getElement().style.border = '1px solid ' + circleColor;
-            });
-        
-            // Add a popup to the marker with additional information
-            var popup =
-                `<h3>${shooting['location']}</h3>
-            <p>${shooting['dateString']}</p><hr>`;
-        
-            if (shooting['summary'] != "") {
-                popup += `<p>${shooting['summary']}</p>`;
-            } else {
-                popup +=
-                    `<p>${shooting['fatalities']} deaths</p>
-             <p>${shooting['injured']} injuries</p>`;
-            }
-        
-            crosshairMarker.bindPopup(popup);
-        });
-        
-
-        // Add labels layer 
-        CartoDB_DarkMatterOnlyLabels.addTo(map);
-    
-        //////////////////// FUNCTION CALLS ////////////////////    
-
-        // updateMap(dataLayer, solarPercentage, colorize, "1989");
-        // createSliderUI(dataLayer, solarPercentage, colorize);
+        updateMap(stateGunData, leafletGeojsonObject, colorize);
+        createSliderUI(dataLayer, solarPercentage, colorize);
 
     } // End drawMap()
 
@@ -452,145 +267,226 @@ Promise.all([
         const radius = Math.sqrt(val / Math.PI);
         return radius * 5; // adjust .5 as a scale factor
     }
+
+    function updateMap(stateGunData, leafletGeojsonObject, colorize) {
+
+    //////////////////// JOIN GEOJSON FEATURES TO GUN DATA & STYLE ACCORDINGLY ////////////////////
+
+    leafletGeojsonObject.eachLayer(function(layer) {
+        // var feature = layer.feature;
+        var fillColor;
+        var stateLineColor;
+        var props = layer.feature.properties;
+        var popup = `<h1>${props.NAME}'s ${currentLayer}</h1>
+        <h2>${currentYear} | `;
+
+        // if the currentLayer is 'Gun Ownership'
+        if (currentLayer == 'Gun Ownership') {
+            // and if there is gun law data for the geojson feature
+            if (stateGunData[props.NAME]) {
+                // and if there is HFR data for the geojson feature 
+                if (stateGunData[props.NAME][currentYear].HFR) {
+                    // then style as...
+                    fillColor = colorize(Number(stateGunData[props.NAME][currentYear].HFR)) // @COLOR
+                    stateLineColor = '#555'; // @COLOR
+                    // and configure popup
+                    popup +=
+                    `${((stateGunData[props.NAME][currentYear].HFR) * 100).toFixed()}%  *</h2>
+                    <h5>* Estimate of the proportion of adult, non-institutionalized residents who live in a household with a firearm. <a href="">Learn more</a></h5>`;
+
+            } else { // if no HFR data
+                popup += `No data`;
+            } 
+          } else { // if no gun law data (DC, Puerto Rico, etc)
+                popup += `No data`;
+          }
+
+        } else { // if the currentLayer is not 'Gun Ownership' it must be 'Permit-to-Purchase Law'
+
+                // and if there is gun law data for the geojson feature
+                if (stateGunData[props.NAME]) {
+                    // and if the state has a 'permit-to-purchase' law... 
+                    if (stateGunData[props.NAME][currentYear].PERMIT != undefined) {
+                        stateLineColor = 'black';
+                        if (stateGunData[props.NAME][currentYear].PERMIT == true) {
+                            // then style as...
+                            fillColor = "#ccc"; //@COLOR
+                        } else {
+                            // else PERMIT must be false -> style as...
+                            fillColor = "grey"; // @COLOR
+                        }
+                        // and configure popup
+                        popup += 
+                        `<p>Permit-to-Purchase law: ${stateGunData[props.NAME][currentYear].PERMIT}</p>`;
+                    } else { // if no permit law data
+                        popup += `No data`;
+                    } 
+            } else { // if no gun law data (DC, Puerto Rico, etc)
+                popup += `No data`;
+            }
+        }
+        
+        layer.setStyle({
+            weight: .75,
+            opacity: 1,
+            color: stateLineColor || "tan", // @COLOR
+            fillColor: fillColor || "tan" // @COLOR
+        });
+
+        // Add a popup to the layer with additional information
+        layer.bindPopup(popup);
+
+    });
+
+    shootings.forEach(shooting => {
+        const date = new Date(shooting['date']).getFullYear();
+        const recency = (new Date().getFullYear() - date);
+
+        if (shooting['summary']) {
+            var circleColor = "#840000"; // @COLOR
+        } else {
+            var circleColor = "#9c3131"; // @COLOR
+        }
+
+        // Create a circle marker and add it to the map
+        const circleMarker = L.circleMarker([shooting['coordinates'][0], shooting['coordinates'][1]], {
+            radius: calcRadius(shooting['total_victims']),
+            color: circleColor,
+            // weight: recency < 30 ? 1 : 0.5,
+            fillOpacity: 0.5,
+            WEIGHT: 0.75,
+            pane: 'circlesPane'
+        }).addTo(map);
+
+        //////////////////// CIRCLE MARKERS EVENT LISTENERS ////////////////////
+
+        // when mousing over a layer
+        circleMarker.on("mouseover", function () {
+            // change the style
+            circleMarker
+                .setStyle({
+                    fillOpacity: 0.75
+
+                })
+                // .bringToFront();
+        });
+
+        // on mousing off layer
+        circleMarker.on("mouseout", function () {
+            // reset the layer style
+            circleMarker.setStyle({
+                // weight: recency < 30 ? 1 : 0.5
+                fillOpacity: 0.5
+            });
+        });
+
+        // Add a popup to the marker with additional information
+        var popup =
+            `<h3>${shooting['location']}</h3>
+        <p>${shooting['dateString']}</p><hr>`;
+
+        if (shooting['summary'] != "") {
+            popup += `<p>${shooting['summary']}</p>`;
+        } else {
+            popup +=
+                `<p>${shooting['fatalities']} deaths</p>
+         <p>${shooting['injured']} injuries</p>`;
+        }
+
+        circleMarker.bindPopup(popup);
+                    
+    });
+
+//     (async () => {
+//         shootings.forEach(async (shooting) => {
+//           const date = new Date(shooting["date"]).getFullYear();
+//           const recency = new Date().getFullYear() - date;
+//           const radius = calcRadius(shooting['total_victims']);
+      
+//           // If the shooting instance has a summary x else y
+//           const circleColor = shooting["summary"] ? "#840000" : "#9c3131"; // @COLOR
+
+//           const defaultIconUrl = await loadAndStyleSVG("img/crosshairs.svg", circleColor, 0.5); // Set opacity to 1, change if needed
+      
+//           const crosshairDefaultIcon = L.icon({
+//             iconUrl: defaultIconUrl,
+//             iconSize: [radius, radius],
+//             iconAnchor: [radius/2, radius/2],
+//           });
+
+//           const hoverIconUrl = await loadAndStyleSVG("img/crosshairs.svg", circleColor, 0.75); // Set opacity to 1, change if needed
+
+//           const crosshairHoverIcon = L.icon({
+//             iconUrl: hoverIconUrl,
+//             iconSize: [radius, radius],
+//             iconAnchor: [radius/2, radius/2],
+//           });
+      
+//           const crosshairMarker = L.marker([shooting["coordinates"][0], shooting["coordinates"][1]], {
+//             icon: crosshairDefaultIcon,
+//             pane: "markersPane",
+//           }).addTo(map);
     
+//         //////////////////// CROSSHAIR MARKERS EVENT LISTENERS ////////////////////
+    
+//         // when mousing over a marker
+//         crosshairMarker.on('mouseover', () => {
+//             // change the icon
+//             marker.setIcon(hoverIcon);
+//           });
+    
+//         // on mousing off a marker
+//         crosshairMarker.on('mouseout', () => {
+//             // reset to default icon
+//             marker.setIcon(defaultIcon);
+//           });
+    
+//         // Add a popup to the marker with additional information
+//         var popup =
+//             `<h3>${shooting['location']}</h3>
+//         <p>${shooting['dateString']}</p><hr>`;
+    
+//         if (shooting['summary'] != "") {
+//             popup += `<p>${shooting['summary']}</p>`;
+//         } else {
+//             popup +=
+//                 `<p>${shooting['fatalities']} deaths</p>
+//          <p>${shooting['injured']} injuries</p>`;
+//         }
+    
+//         crosshairMarker.bindPopup(popup);
+//     }); // End of forEach
+// })(); // End of anon async func
 
-    // function updateMap(dataLayer, solarPercentage, colorize, currentYear) {
+////// WORKING WITH THE SVG ICON ///////
 
-    //     const sparkOptions = {
-    //         id: "spark",
-    //         width: 280,
-    //         height: 50,
-    //         color: "green",
-    //         lineWidth: 3
-    //     };
+// Full disclosure - After explaining the logic and feeding it the svg, this entire function was written by the Github Copilot AI. I wasn't sure how to approach this problem. Now that I've been 'shown' by Copilot, I understand how to approach it in the future. Regex's are not yet my forte.
 
-    //     dataLayer.eachLayer(function (layer) {
+// async function loadAndStyleSVG(svgPath, color, opacity) {
+//     const response = await fetch(svgPath);
+//     const svgText = await response.text();
+  
+//     // Replace or add the fill, stroke, fill-opacity, and stroke-opacity attributes with !important
+//     const styledSVG = svgText
+//     //   .replace(/<path([^>]*)>/, `<path$1 fill="${color} !important" stroke="${color} !important" fill-opacity="${opacity} !important" stroke-opacity="${opacity} !important">`)
+//       .replace(/fill="[^"]*"/g, `fill="${color} !important"`)
+//       .replace(/stroke="[^"]*"/g, `stroke="${color} !important"`)
+//       .replace(/fill-opacity="[^"]*"/g, `fill-opacity="${opacity} !important"`)
+//       .replace(/stroke-opacity="[^"]*"/g, `stroke-opacity="${opacity} !important"`);
+  
+//     // Convert the styled SVG string to a data URL
+//     const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(styledSVG);
+  
+//     return dataUrl;
+//   }
 
-    //         // This feature is broken and I'm at a loss as to how to fix it. I know the answer must lie in the D3 logic inside sparkLine() but I don't see it.
-    //         sparkLine(layer, sparkOptions, currentYear);
+    // Add labels layer 
+    CartoDB_DarkMatterOnlyLabels.addTo(map);
 
-    //         const solarProp = layer.feature.properties.solarPercentage;
 
-    //         ///////// Determine Layer fill color and popup logic
 
-    //         // If solarPercentage is present in layer...
-    //         if (solarProp) {
-    //             layer.setStyle({
-    //                 // Set fill color based on currentYear's solarPercentage
-    //                 fillColor: colorize(Number(solarProp[currentYear]))
-    //             });
 
-    //             // If the given layer(state)'s currentYear value is within valid range...
-    //             if (solarProp[currentYear] &&
-    //                 solarProp[currentYear] > 0 &&
-    //                 solarProp[currentYear] <= 100) {
-
-    //                 if (solarProp[currentYear] > 0 &&
-    //                     solarProp[currentYear] < 0.01) {
-
-    //                     var popup = `<span id="spark"></span><h3>In <b>${currentYear} less than 0.01%</b> of <b>${layer.feature.properties.NAME}'s</b> Residential Electricity came from Solar<b/></h3>`;
-    //                 } else {
-
-    //                     var popup = `<span id="spark"></span><h3>In <b>${currentYear} ${solarProp[currentYear].toFixed(2)}%</b> of <b>${layer.feature.properties.NAME}'s</b> Residential Electricity came from Solar<b/></h3>`;
-    //                 }
-    //             } else { // Otherwise if value is outside of valid range (see Alaska 1997-2008)
-    //                 layer.setStyle({
-    //                     fillColor: "white"
-    //                 });
-    //                 var popup = `<h3><b>${layer.feature.properties.NAME}</b><br>${currentYear} Data Unavailable</h3>`;
-    //             }
-    //         } else { // Otherwise if solarPercentage is NOT present in layer (see Puerto Rico)
-    //             layer.setStyle({
-    //                 fillColor: "white"
-    //             });
-    //             var popup = `<h3><b>${layer.feature.properties.NAME}</b><br>${currentYear} Data Unavailable</h3>`;
-    //         }
-    //         layer.bindPopup(popup);
-    //     });
-
-    //     //Ensure proper layering of Labels on each map update
-    //     CartoDB_PositronOnlyLabels.addTo(map);
-
-    // } // end updateMap()
-
-    // function sparkLine(data, options, currentYear) {
-
-    //     // console.log("Data = geoJSON feature: ", data);
-
-    //     // Clear previous svg
-    //     d3.select(`#${options.id} svg`).remove();
-
-    //     // Create array to store full range of data being passed in
-    //     var stateRange = [];
-
-    //     // Loop through data object and push values to stateRange array
-    //     var stateProps = data.feature.properties;
-    //     for (var year in stateProps.solarPercentage) {
-    //         stateRange.push(stateProps.solarPercentage[year]);
-    //     }
-
-    //     // console.log("stateRange array (data given to D3): ", stateRange);
-
-    //     const w = options.width,
-    //         h = options.height,
-    //         m = {
-    //             top: 5,
-    //             right: 5,
-    //             bottom: 5,
-    //             left: 5,
-    //         },
-    //         iw = w - m.left - m.right,
-    //         ih = h - m.top - m.bottom,
-    //         x = d3.scaleLinear().domain([1989, 2020]).range([0, iw]),
-    //         y = d3
-    //             .scaleLinear()
-    //             .domain([d3.min(stateRange), d3.max(stateRange)])
-    //             .range([ih, 0]);
-
-    //     const svg = d3
-    //         .select(`#${options.id}`)
-    //         .append("svg")
-    //         .attr("width", w)
-    //         .attr("height", h)
-    //         .append("g")
-    //         .attr("transform", `translate(${m.left},${m.top})`);
-
-    //     const line = d3
-    //         .line()
-    //         .x((d, i) => x(i))
-    //         .y((d) => y(d));
-
-    //     const area = d3
-    //         .area()
-    //         .x((d, i) => x(i))
-    //         .y0(d3.min(stateRange))
-    //         .y1((d) => y(d));
-
-    //     svg
-    //         .append("path")
-    //         .datum(stateRange)
-    //         .attr("stroke-width", 0)
-    //         .attr("fill", options.color)
-    //         .attr("opacity", 0.5)
-    //         .attr("d", area);
-
-    //     svg
-    //         .append("path")
-    //         .datum(stateRange)
-    //         .attr("fill", "none")
-    //         .attr("stroke", options.color)
-    //         .attr("stroke-width", options.lineWidth)
-    //         .attr("d", line);
-
-    //     svg
-    //         .append("circle")
-    //         .attr("cx", x(Number(currentYear) - 1))
-    //         .attr("cy", y(Number(stateProps[currentYear]) - 1))
-    //         .attr("r", "4px")
-    //         .attr("fill", "white")
-    //         .attr("stroke", options.color)
-    //         .attr("stroke-width", options.lineWidth / 2);
-    // }
+    } // end updateMap()
 
     ////////////////////////////////////////
     ////////// LEAFLET CONTROLS //////////
