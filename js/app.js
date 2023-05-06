@@ -93,8 +93,10 @@
 
     // map options
     const options = {
-        center: [52, -122],
-        zoom: 3.75,
+        center: [39.8283, -98.5795],
+        zoom: 5,
+        minZoom: 5,
+        maxZoom: 9,
         scrollWheelZoom: true,
         zoomSnap: 0.1,
         dragging: true,
@@ -293,7 +295,7 @@
     function calcRadius(val) {
         const radius = Math.sqrt(val / Math.PI);
         // The conditional logic here sizes the largest datum differently from the others in order to facilitate perception of scale between smaller values
-        return (val > 900) ? radius * 2 : radius * 3;
+        return (val > 900) ? radius * 3 : radius * 5;
     }
 
     ////////////////////////////////////////
