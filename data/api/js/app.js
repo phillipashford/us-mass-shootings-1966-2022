@@ -466,8 +466,7 @@
             var fillColor = noDataColor;
             var stateLineColor = defaultStateLineColor;
             var props = layer.feature.properties;
-            var popup = `<h1>${props.NAME}'s ${currentLayer}</h1>
-        <h2>${currentYear} | `;
+            var popup = ``;
 
             // if the currentLayer is 'Gun Ownership'
             if (currentLayer == 'Gun Ownership') {
@@ -479,14 +478,19 @@
                         fillColor = colorize(Number(stateGunData[props.NAME][currentYear].HFR)) // @COLOR
                         // and configure popup
                         popup +=
-                            `${((stateGunData[props.NAME][currentYear].HFR) * 100).toFixed()}%  *</h2>
+                            `<h1>${currentLayer} in ${props.NAME}</h1>
+                            <h2>${currentYear} | ${((stateGunData[props.NAME][currentYear].HFR) * 100).toFixed()}%  *</h2>
                     <h5>* Estimate of the proportion of adult, non-institutionalized residents who live in a household with a firearm. <a href="">Learn more</a></h5>`;
 
                     } else { // if no HFR data
-                        popup += `No data`;
+                        popup += 
+                        `<h1>${currentLayer} in ${props.NAME}</h1>
+                        <h3>${currentYear}: No data</h3>`;
                     }
                 } else { // if no gun law data (DC, Puerto Rico, etc)
-                    popup += `No data`;
+                    popup += 
+                    `<h1>${currentLayer} in ${props.NAME}</h1>
+                    <h3>${currentYear}: No data</h3>`;
                 }
 
             } else { // if the currentLayer is not 'Gun Ownership' it must be 'Permit-to-Purchase Law'
@@ -506,12 +510,19 @@
                         }
                         // and configure popup
                         popup +=
-                            `<p>Permit-to-Purchase law: ${stateGunData[props.NAME][currentYear].PERMIT}</p>`;
+                            `<h1>${currentLayer} in ${props.NAME}</h1>
+                            <h2>Has Permit-to-Purchase law: 
+                            ${(stateGunData[props.NAME][currentYear].PERMIT == true) ? `Yes` : `No`}
+                            </h2>`;
                     } else { // if no permit law data
-                        popup += `No data`;
+                        popup += 
+                        `<h1>${currentLayer} in ${props.NAME}</h1>
+                        <h3>${currentYear}: No data</h3>`;
                     }
                 } else { // if no gun law data (DC, Puerto Rico, etc)
-                    popup += `No data`;
+                    popup += 
+                    `<h1>${currentLayer} in ${props.NAME}</h1>
+                    <h3>${currentYear}: No data</h3>`;
                 }
             }
 
