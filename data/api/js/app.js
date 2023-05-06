@@ -19,6 +19,10 @@
     const button = document.querySelector("#modal-button");
     const title = document.querySelector("#title");
     const modalFooter = document.getElementById("modal-footer");
+      // create a function with a short name to select elements
+  const $ = function (x) {
+    return document.querySelector(x);
+  };
 
     // Update date
     setDate();
@@ -66,7 +70,7 @@
 
     var noDataColor = "#222";
 
-
+    var defaultStateLineColor = "white";
 
     ////////////////////////////////////////
     ////////// MAP INSTANTIATION ///////////
@@ -219,8 +223,8 @@
 
         //////////////////// FUNCTION CALLS ////////////////////    
 
-        // Send processed data along with the geojson to the drawMap function where it will be added to the map and styled
-        drawMap(stateGunData, states, colorize, breaks);
+        // Send processed data along with the geojson to the renderGeojson function where it will be added to the map and styled
+        renderGeojson(stateGunData, states, colorize, breaks);
 
     } // End processData()
 
@@ -228,14 +232,14 @@
     ////// DRAWING THE MAP ////////
     ////////////////////////////////////////
 
-    function drawMap(stateGunData, states, colorize, breaks) {
+    function renderGeojson(stateGunData, states, colorize, breaks) {
 
         //////////////////// ADD GEOJSON LAYER ////////////////////
 
         const leafletGeojsonObject = L.geoJson(states, {
             style: function (feature) {
                 return {
-                    color: "#fff", //@COLOR
+                    color: defaultStateLineColor, //@COLOR
                     weight: 0.25,
                     fillOpacity: 0.75,
                 };
@@ -272,11 +276,11 @@
         drawCircleMarkers(stateGunData);
         drawLegend(breaks, colorize, leafletGeojsonObject, stateGunData);
 
-    } // End drawMap()
+    } // End renderGeojson()
 
     function calcRadius(val) {
         const radius = Math.sqrt(val / Math.PI);
-        return radius * 3; // adjust .25 as a scale factor
+        return (val > 900) ? radius * 2: radius * 3; // adjust .25 as a scale factor
     }
 
     function drawCircleMarkers(stateGunData) {
@@ -286,12 +290,19 @@
                 map.removeLayer(layer);
             }
         });
-
+        
         shootings.forEach(shooting => {
             const date = new Date(shooting['date']).getFullYear();
             const recency = (new Date().getFullYear() - date);
             var circleMarker;
-            var circleColor = "#840000"; // @COLOR
+            var options = {
+                radius: calcRadius(shooting['total_victims']),
+                color: "#840000",
+                fillColor: "#9c3131",
+                fillOpacity: 0.5,
+                weight: 1,
+                pane: 'circlesPane' 
+        }
 
             // I'm going to use the logic immediately below to add a small animation to shooting markers that have a summary attached to them. Initially I was going to change its color, but I don't think that would offer enough of an affordance and I think the user might confuse it with a data measurement.
 
@@ -306,23 +317,11 @@
             if (toggleAllShootings == true) {
 
                 // Create a circle marker and add it to the map
-                circleMarker = L.circleMarker([shooting['coordinates'][0], shooting['coordinates'][1]], {
-                    radius: calcRadius(shooting['total_victims']),
-                    color: circleColor,
-                    fillOpacity: 0.5,
-                    weight: 0.5,
-                    pane: 'circlesPane'
-                }).addTo(map);
+                circleMarker = L.circleMarker([shooting['coordinates'][0], shooting['coordinates'][1]], options).addTo(map);
             } else { // Otherwise add only the shootings whose dates match the currentYear value
                 if (date == currentYear) {
                     // Create a circle marker and add it to the map
-                    circleMarker = L.circleMarker([shooting['coordinates'][0], shooting['coordinates'][1]], {
-                        radius: calcRadius(shooting['total_victims']),
-                        color: circleColor,
-                        fillOpacity: 0.5,
-                        weight: 0.5,
-                        pane: 'circlesPane'
-                    }).addTo(map);
+                    circleMarker = L.circleMarker([shooting['coordinates'][0], shooting['coordinates'][1]], options).addTo(map);
                 } else {
 
                 }
@@ -465,7 +464,7 @@
         leafletGeojsonObject.eachLayer(function (layer) {
             // var feature = layer.feature;
             var fillColor = noDataColor;
-            var stateLineColor = noDataColor;
+            var stateLineColor = defaultStateLineColor;
             var props = layer.feature.properties;
             var popup = `<h1>${props.NAME}'s ${currentLayer}</h1>
         <h2>${currentYear} | `;
@@ -496,7 +495,7 @@
                 if (stateGunData[props.NAME] && stateGunData[props.NAME][currentYear]) {
                     // and if the state has a 'permit-to-purchase' law... 
                     if (stateGunData[props.NAME][currentYear].PERMIT != undefined) {
-                        stateLineColor = 'black';
+                        // stateLineColor = 'black';
                         if (stateGunData[props.NAME][currentYear].PERMIT == true) {
                             // then style as...
                             fillColor = scaleColors[0]; //@COLOR
@@ -517,10 +516,11 @@
             }
 
             layer.setStyle({
-                weight: .5,
+                weight: .25,
                 opacity: 1,
                 fillColor: fillColor,
                 stateLineColor: stateLineColor
+
             });
 
             // Add a popup to the layer with additional information
@@ -553,7 +553,7 @@
 if (currentLayer == "Gun Ownership") {
             // select div and create legend title
             const legend = document.querySelector(".legend");
-            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Laws</button></div><h3><span>1989</span>Percentage of residents living in a<br>household with a firearm</h3>`;
+            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Laws</button></div><h3><span>1989</span>Residents living in a<br> household with a firearm</h3>`;
     
             // I changed the structure here because the browser was closing the ul tag early for some reason (before the loop ran) and it was offsetting the spans in the legend.
             let listItems = `<li><span style="background:${noDataColor}"></span> No Data </li>`;
@@ -573,14 +573,17 @@ if (currentLayer == "Gun Ownership") {
             }
     
             // creates the unordered list and adds the list items to i
-            const unorderedList = `<ul>${listItems}<li></li></ul>`;
+            const unorderedList = `<ul>${listItems}</ul>`;
     
             // adds the unordered list to the legend
             legend.innerHTML += unorderedList;
+
+            $("#ownership").style.background = scaleColors[0];
+
 } else {
             // select div and create legend title
             const legend = document.querySelector(".legend");
-            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Laws</button></div><h3><span>1989</span>States with a Permit-to-Purchase Law</h3>`;
+            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Laws</button></div><h3><span>1989</span>States with a<br> Permit-to-Purchase Law</h3>`;
     
             // I changed the structure here because the browser was closing the ul tag early for some reason (before the loop ran) and it was offsetting the spans in the legend.
             let unorderedList = `<ul><li><span style="background:${noDataColor}"></span> No Data </li>
@@ -589,6 +592,9 @@ if (currentLayer == "Gun Ownership") {
     
             // adds the unordered list to the legend
             legend.innerHTML += unorderedList;
+
+            $("#permit").style.background = scaleColors[0];
+
 }
 
         // References and stores gun ownership button
@@ -603,7 +609,8 @@ if (currentLayer == "Gun Ownership") {
             drawLayers(stateGunData, leafletGeojsonObject, colorize, currentYear);
                     // Removes pre-existing legends
         map.removeControl(legendControl);
-            drawLegend(breaks, colorize, leafletGeojsonObject)
+            drawLegend(breaks, colorize, leafletGeojsonObject);
+            $("#ownership").style.background = scaleColors[0];
         });
 
         permitButton.addEventListener("click", function() {
@@ -611,7 +618,8 @@ if (currentLayer == "Gun Ownership") {
             drawLayers(stateGunData, leafletGeojsonObject, colorize, currentYear);
                     // Removes pre-existing legends
         map.removeControl(legendControl);
-            drawLegend(breaks, colorize, leafletGeojsonObject)
+            drawLegend(breaks, colorize, leafletGeojsonObject);
+            $("#permit").style.background = scaleColors[0];
         });
 
     } // end drawLegend()
@@ -643,6 +651,49 @@ if (currentLayer == "Gun Ownership") {
         sliderControl.addTo(map);
         // select the form element
         const slider = document.querySelector(".year-slider");
+
+    // var victimCountArray = [];
+    // for (var i = 0; i < shootings.length; i++) {
+    //     victimCountArray.push(shootings[i]['total_victims'])
+    // }
+ 
+    // var maxVictims = Math.max.apply(null, victimCountArray);
+    //     // calc the diameters
+    // const largeDiameter = calcRadius(maxVictims) * 2;
+    // const smallDiameter = Number((largeDiameter / 2).toFixed(0));
+
+//   // select our circles container and set the height
+//   $(".slider-circles").style.height = `${largeDiameter.toFixed()}px`;
+
+//   // set width and height for large circle
+//   $(".slider-large").style.width = `${largeDiameter.toFixed()}px`;
+//   $(".slider-large").style.height = `${largeDiameter.toFixed()}px`;
+
+//   // set width and height for small circle and position
+//   $(".slider-small").style.width = `${smallDiameter.toFixed()}px`;
+//   $(".slider-small").style.height = `${smallDiameter.toFixed()}px`;
+//   $(".slider-small").style.top = `${largeDiameter - smallDiameter - 2}px`;
+//   $(".slider-small").style.left = `${smallDiameter / 2}px`;
+
+// $("#ui-controls").style.width = $(".slider-large").offsetWidth + $("hr.large").offsetWidth + $(".slider-large-label").offsetWidth + 10 +'px';
+
+// $("#ui-controls").style.minWidth = $("#all-shootings-toggle").offsetWidth + 100 +'px';
+
+//   // label the max and half values
+//   $(".slider-large-label").innerHTML = `${maxVictims.toLocaleString()}`;
+//   $(".slider-small-label").innerHTML = (maxVictims / 2).toLocaleString();
+
+//   // adjust the position of the label based on size of circle
+//   $(".slider-large-label").style.top = `${-11}px`;
+//   $(".slider-large-label").style.left = `${largeDiameter + 30}px`;
+
+//   // adjust the position of the label based on size of circle
+//   $(".slider-small-label").style.top = `${smallDiameter - 13}px`;
+//   $(".slider-small-label").style.left = `${largeDiameter + 30}px`;
+
+//   // insert a couple hr elements and use to connect value label to top of each circle
+//   $("hr.small").style.top = `${largeDiameter - smallDiameter - 10}px`;
+
 
         // listen for changes on input element
         slider.addEventListener("input", function (e) {
