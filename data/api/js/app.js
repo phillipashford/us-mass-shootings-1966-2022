@@ -3,26 +3,41 @@
 
     'use strict';
 
-    ////////////////////////////////////////
-    ////////// INDEX ///////////////////////
-    ////////////////////////////////////////
+    ////////////////////
+    ////////// TOC /////
+    ////////////////////
+    // I know this is a lot of code. I aim to prioritize refactoring before final version. I learned soooo much from this project! Particularly regarding function sequence/data flow. I went crossed eyed trying to make sense of things until I finally mapped it all out on paper and 'went with the flow'.
 
-    ////////// COLOR MODIFICATIONS
-    // Ctrl + f >> "@COLOR"
+    // LINE 28 INITIALIZATION
+    // LINE 91 MAP INSTANTIATION
+    // LINE 143 FETCH AND PARSE DATA
+    // LINE 169 DATA PROCESSING
+        // LINE 174 GUN DATA LOGIC
+        // LINE 220 DATA BREAKS LOGIC
+    // LINE 244 RENDERING THE LEAFLET GEOJSON
+    // LINE 300 DRAWING THE CIRCLE MARKERS 
+    // LINE 389 DRAWING THE STATE LAYERS 
+    // LINE 476 LEAFLET CONTROLS 
+        // LINE 479 CREATE LEGEND
+        // LINE 569 CREATE SLIDER UI
+
+
+
 
     ////////////////////////////////////////
     ////////// INITIALIZATION //////////////
     ////////////////////////////////////////
 
+    // create a function with a short name to select elements
+    const $ = function (x) {
+        return document.querySelector(x);
+    };
+
     // get page elements
-    const modal = document.querySelector("#modal");
-    const button = document.querySelector("#modal-button");
-    const title = document.querySelector("#title");
+    const modal = $("#modal");
+    const button = $("#modal-button");
+    const title = $("#title");
     const modalFooter = document.getElementById("modal-footer");
-      // create a function with a short name to select elements
-  const $ = function (x) {
-    return document.querySelector(x);
-  };
 
     // Update date
     setDate();
@@ -216,35 +231,33 @@
         // console.log(hfrRangeMax);
         // console.log(hfrRangeMin);
 
-        // Create color generator function @COLOR
+        // Create color generator function 
         var colorize = chroma.scale(scaleColors).domain([hfrRangeMin, hfrRangeMax])
             .classes(breaks)
             .mode('lab');
 
-        //////////////////// FUNCTION CALLS ////////////////////    
-
-        // Send processed data along with the geojson to the renderGeojson function where it will be added to the map and styled
-        renderGeojson(stateGunData, states, colorize, breaks);
+        renderLeafletGeojson(stateGunData, states, colorize, breaks);
 
     } // End processData()
 
     ////////////////////////////////////////
-    ////// DRAWING THE MAP ////////
+    ///// RENDERING THE LEAFLET GEOJSON ////
     ////////////////////////////////////////
 
-    function renderGeojson(stateGunData, states, colorize, breaks) {
+    function renderLeafletGeojson(stateGunData, states, colorize, breaks) {
 
-        //////////////////// ADD GEOJSON LAYER ////////////////////
+        //////////////////// RENDER LEAFLET LAYER ////////////////////
 
         const leafletGeojsonObject = L.geoJson(states, {
             style: function (feature) {
                 return {
-                    color: defaultStateLineColor, //@COLOR
+                    color: defaultStateLineColor, //
                     weight: 0.25,
                     fillOpacity: 0.75,
+                    opacity: 1
                 };
             },
-            //////////////////// GEOJSON EVENT LISTENERS ////////////////////
+            //////////////////// ADD EVENT LISTENERS ////////////////////
 
             // add hover/touch functionality to each feature layer
             onEachFeature: function (feature, layer) {
@@ -257,7 +270,6 @@
                             weight: 0.5,
                             fillOpacity: 0.9
                         })
-                    // .bringToFront();
                 });
 
                 // on mousing off layer
@@ -276,49 +288,50 @@
         drawCircleMarkers(stateGunData);
         drawLegend(breaks, colorize, leafletGeojsonObject, stateGunData);
 
-    } // End renderGeojson()
+    } // End renderLeafletGeojson()
 
     function calcRadius(val) {
         const radius = Math.sqrt(val / Math.PI);
-        return (val > 900) ? radius * 2: radius * 3; // adjust .25 as a scale factor
+        // The conditional logic here sizes the largest datum differently from the others in order to facilitate perception of scale between smaller values
+        return (val > 900) ? radius * 2 : radius * 3;
     }
 
+    ////////////////////////////////////////
+    ///// DRAWING THE CIRCLE MARKERS ///////
+    ////////////////////////////////////////
+
     function drawCircleMarkers(stateGunData) {
-           // remove all circle markers from the map
-           map.eachLayer(function (layer) {
+
+        // remove all circle markers from the map before updating
+        map.eachLayer(function (layer) {
             if (layer instanceof L.CircleMarker) {
                 map.removeLayer(layer);
             }
         });
-        
+
         shootings.forEach(shooting => {
             const date = new Date(shooting['date']).getFullYear();
-            const recency = (new Date().getFullYear() - date);
             var circleMarker;
+            // I'm using the logic immediately below to add a class name to the markers whose incidents include a summary. Initially I was going to change the color of these markers to offer the user an affordance but I think the user might confuse it with a data measurement. I played around with animations but they were not subtle enough.
+            var className = (shooting['summary']) ? "summary " : "";
             var options = {
                 radius: calcRadius(shooting['total_victims']),
                 color: "#840000",
                 fillColor: "#9c3131",
                 fillOpacity: 0.5,
                 weight: 1,
-                pane: 'circlesPane' 
-        }
-
-            // I'm going to use the logic immediately below to add a small animation to shooting markers that have a summary attached to them. Initially I was going to change its color, but I don't think that would offer enough of an affordance and I think the user might confuse it with a data measurement.
-
-            // if (shooting['summary']) {
-            //     var circleColor = "#840000"; // @COLOR
-            // } else {
-            //     var circleColor = "#9c3131"; // @COLOR
-            // }
-
+                pane: 'circlesPane',
+                className: className
+            }
 
             // if the user has requested shootings from all years...
             if (toggleAllShootings == true) {
+                $("#all-shootings-toggle").style.background = scaleColors[0];
 
                 // Create a circle marker and add it to the map
                 circleMarker = L.circleMarker([shooting['coordinates'][0], shooting['coordinates'][1]], options).addTo(map);
             } else { // Otherwise add only the shootings whose dates match the currentYear value
+                $("#all-shootings-toggle").style.background = "#ddd";
                 if (date == currentYear) {
                     // Create a circle marker and add it to the map
                     circleMarker = L.circleMarker([shooting['coordinates'][0], shooting['coordinates'][1]], options).addTo(map);
@@ -330,139 +343,58 @@
             //////////////////// CIRCLE MARKERS EVENT LISTENERS ////////////////////
 
             if (circleMarker) {
-                            // when mousing over a layer
-            circleMarker.on("mouseover", function () {
-                // change the style
-                circleMarker
-                    .setStyle({
-                        fillOpacity: 0.75
+                // when mousing over a layer
+                circleMarker.on("mouseover", function () {
+                    // change the style
+                    circleMarker
+                        .setStyle({
+                            fillOpacity: 0.75
 
-                    })
-                // .bringToFront();
-            });
-
-            // on mousing off layer
-            circleMarker.on("mouseout", function () {
-                // reset the layer style
-                circleMarker.setStyle({
-                    // weight: recency < 30 ? 1 : 0.5
-                    fillOpacity: 0.5
+                        })
+                    // .bringToFront();
                 });
-            });
 
-            // Add a popup to the marker with additional information
-            var popup =
-                `<h3>${shooting['location']}</h3>
+                // on mousing off layer
+                circleMarker.on("mouseout", function () {
+                    // reset the layer style
+                    circleMarker.setStyle({
+                        // weight: recency < 30 ? 1 : 0.5
+                        fillOpacity: 0.5
+                    });
+                });
+
+                // Add a popup to the marker with additional information
+                var popup =
+                    `<h3>${shooting['location']}</h3>
                 <p>${shooting['dateString']}</p><hr>`;
 
-            if (shooting['summary'] != "") {
-                popup += `<p>${shooting['summary']}</p>`;
-            } else {
-                popup +=
-                    `<p>${shooting['fatalities']} deaths</p>
+                if (shooting['summary'] != "") {
+                    popup += `<p>${shooting['summary']}</p>`;
+                } else {
+                    popup +=
+                        `<p>${shooting['fatalities']} deaths</p>
                  <p>${shooting['injured']} injuries</p>`;
-            }
+                }
 
-            circleMarker.bindPopup(popup);
+                circleMarker.bindPopup(popup);
             }
 
         });
 
         toggleAllShootings = false;
 
-        // EXPERIMENTAL ICON CODE - not working right but still going to play with it
-        //     (async () => {
-        //         shootings.forEach(async (shooting) => {
-        //           const date = new Date(shooting["date"]).getFullYear();
-        //           const recency = new Date().getFullYear() - date;
-        //           const radius = calcRadius(shooting['total_victims']);
+    } // END drawCircleMarkers
 
-        //           // If the shooting instance has a summary x else y
-        //           const circleColor = shooting["summary"] ? "#840000" : "#9c3131"; // @COLOR
-
-        //           const defaultIconUrl = await loadAndStyleSVG("img/crosshairs.svg", circleColor, 0.5); // Set opacity to 1, change if needed
-
-        //           const crosshairDefaultIcon = L.icon({
-        //             iconUrl: defaultIconUrl,
-        //             iconSize: [radius, radius],
-        //             iconAnchor: [radius/2, radius/2],
-        //           });
-
-        //           const hoverIconUrl = await loadAndStyleSVG("img/crosshairs.svg", circleColor, 0.75); // Set opacity to 1, change if needed
-
-        //           const crosshairHoverIcon = L.icon({
-        //             iconUrl: hoverIconUrl,
-        //             iconSize: [radius, radius],
-        //             iconAnchor: [radius/2, radius/2],
-        //           });
-
-        //           const crosshairMarker = L.marker([shooting["coordinates"][0], shooting["coordinates"][1]], {
-        //             icon: crosshairDefaultIcon,
-        //             pane: "markersPane",
-        //           }).addTo(map);
-
-        //         //////////////////// CROSSHAIR MARKERS EVENT LISTENERS ////////////////////
-
-        //         // when mousing over a marker
-        //         crosshairMarker.on('mouseover', () => {
-        //             // change the icon
-        //             marker.setIcon(hoverIcon);
-        //           });
-
-        //         // on mousing off a marker
-        //         crosshairMarker.on('mouseout', () => {
-        //             // reset to default icon
-        //             marker.setIcon(defaultIcon);
-        //           });
-
-        //         // Add a popup to the marker with additional information
-        //         var popup =
-        //             `<h3>${shooting['location']}</h3>
-        //         <p>${shooting['dateString']}</p><hr>`;
-
-        //         if (shooting['summary'] != "") {
-        //             popup += `<p>${shooting['summary']}</p>`;
-        //         } else {
-        //             popup +=
-        //                 `<p>${shooting['fatalities']} deaths</p>
-        //          <p>${shooting['injured']} injuries</p>`;
-        //         }
-
-        //         crosshairMarker.bindPopup(popup);
-        //     }); // End of forEach
-        // })(); // End of anon async func
-
-        ////// WORKING WITH THE SVG ICON ///////
-
-        // Full disclosure - After explaining the logic and feeding it the svg, this entire function was written by the Github Copilot AI. I wasn't sure how to approach this problem. Now that I've been 'shown' by Copilot, I understand how to approach it in the future. Regex's are not yet my forte.
-
-        // async function loadAndStyleSVG(svgPath, color, opacity) {
-        //     const response = await fetch(svgPath);
-        //     const svgText = await response.text();
-
-        //     // Replace or add the fill, stroke, fill-opacity, and stroke-opacity attributes with !important
-        //     const styledSVG = svgText
-        //     //   .replace(/<path([^>]*)>/, `<path$1 fill="${color} !important" stroke="${color} !important" fill-opacity="${opacity} !important" stroke-opacity="${opacity} !important">`)
-        //       .replace(/fill="[^"]*"/g, `fill="${color} !important"`)
-        //       .replace(/stroke="[^"]*"/g, `stroke="${color} !important"`)
-        //       .replace(/fill-opacity="[^"]*"/g, `fill-opacity="${opacity} !important"`)
-        //       .replace(/stroke-opacity="[^"]*"/g, `stroke-opacity="${opacity} !important"`);
-
-        //     // Convert the styled SVG string to a data URL
-        //     const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(styledSVG);
-
-        //     return dataUrl;
-        //   }
-        // END EXPERIMENTAL ICON CODE
-
-    }
+    ////////////////////////////////////////
+    ///// DRAWING THE STATE LAYERS /////////
+    ////////////////////////////////////////
 
     function drawLayers(stateGunData, leafletGeojsonObject, colorize) {
 
         //////////////////// JOIN GEOJSON FEATURES TO GUN DATA & STYLE ACCORDINGLY ////////////////////
 
         leafletGeojsonObject.eachLayer(function (layer) {
-            // var feature = layer.feature;
+            // Instantiation of variables + default colors for any layers without data
             var fillColor = noDataColor;
             var stateLineColor = defaultStateLineColor;
             var props = layer.feature.properties;
@@ -470,12 +402,12 @@
 
             // if the currentLayer is 'Gun Ownership'
             if (currentLayer == 'Gun Ownership') {
-                // and if there is gun law data for the geojson feature during the selected year
+                // and if there is gun data for the geojson feature during the selected year
                 if (stateGunData[props.NAME] && stateGunData[props.NAME][currentYear]) {
                     // and if there is HFR data for the geojson feature 
                     if (stateGunData[props.NAME][currentYear].HFR) {
                         // then style as...
-                        fillColor = colorize(Number(stateGunData[props.NAME][currentYear].HFR)) // @COLOR
+                        fillColor = colorize(Number(stateGunData[props.NAME][currentYear].HFR))
                         // and configure popup
                         popup +=
                             `<h1>${currentLayer} in ${props.NAME}</h1>
@@ -483,17 +415,17 @@
                     <h5>* Estimate of the proportion of adult, non-institutionalized residents who live in a household with a firearm. <a href="">Learn more</a></h5>`;
 
                     } else { // if no HFR data
-                        popup += 
-                        `<h1>${currentLayer} in ${props.NAME}</h1>
+                        popup +=
+                            `<h1>${currentLayer} in ${props.NAME}</h1>
                         <h3>${currentYear}: No data</h3>`;
                     }
                 } else { // if no gun law data (DC, Puerto Rico, etc)
-                    popup += 
-                    `<h1>${currentLayer} in ${props.NAME}</h1>
+                    popup +=
+                        `<h1>${currentLayer} in ${props.NAME}</h1>
                     <h3>${currentYear}: No data</h3>`;
                 }
 
-            } else { // if the currentLayer is not 'Gun Ownership' it must be 'Permit-to-Purchase Law'
+            } else { // if the currentLayer is not 'Gun Ownership'
 
                 // and if there is gun law data for the geojson feature during the selected year
                 if (stateGunData[props.NAME] && stateGunData[props.NAME][currentYear]) {
@@ -502,11 +434,11 @@
                         // stateLineColor = 'black';
                         if (stateGunData[props.NAME][currentYear].PERMIT == true) {
                             // then style as...
-                            fillColor = scaleColors[0]; //@COLOR
+                            fillColor = scaleColors[0];
 
                         } else {
                             // else PERMIT must be false -> style as...
-                            fillColor = scaleColors[1]; // @COLOR
+                            fillColor = scaleColors[1];
                         }
                         // and configure popup
                         popup +=
@@ -515,20 +447,20 @@
                             ${(stateGunData[props.NAME][currentYear].PERMIT == true) ? `Yes` : `No`}
                             </h2>`;
                     } else { // if no permit law data
-                        popup += 
-                        `<h1>${currentLayer} in ${props.NAME}</h1>
+                        popup +=
+                            `<h1>${currentLayer} in ${props.NAME}</h1>
                         <h3>${currentYear}: No data</h3>`;
                     }
                 } else { // if no gun law data (DC, Puerto Rico, etc)
-                    popup += 
-                    `<h1>${currentLayer} in ${props.NAME}</h1>
+                    popup +=
+                        `<h1>${currentLayer} in ${props.NAME}</h1>
                     <h3>${currentYear}: No data</h3>`;
                 }
             }
 
+
+            // Send options to Leaflet's setStyle function
             layer.setStyle({
-                weight: .25,
-                opacity: 1,
                 fillColor: fillColor,
                 stateLineColor: stateLineColor
 
@@ -538,14 +470,15 @@
             layer.bindPopup(popup);
         });
 
-    } // end updateMap()
+    } // end drawLayers()
 
     ////////////////////////////////////////
-    ////////// LEAFLET CONTROLS //////////
+    ////////// LEAFLET CONTROLS ////////////
     ////////////////////////////////////////
 
+    //////////////////// LEGEND //////////////////// 
     function drawLegend(breaks, colorize, leafletGeojsonObject) {
-    
+
         // create a Leaflet control for the legend
         const legendControl = L.control({
             position: "topright",
@@ -561,79 +494,79 @@
         // add the legend control to the map
         legendControl.addTo(map);
 
-if (currentLayer == "Gun Ownership") {
+        if (currentLayer == "Gun Ownership") {
             // select div and create legend title
-            const legend = document.querySelector(".legend");
-            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Laws</button></div><h3><span>1989</span>Residents living in a<br> household with a firearm</h3>`;
-    
+            const legend = $(".legend");
+            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Law</button></div><h3><span>1989</span>Residents living in a<br> household with a firearm</h3>`;
+
             // I changed the structure here because the browser was closing the ul tag early for some reason (before the loop ran) and it was offsetting the spans in the legend.
             let listItems = `<li><span style="background:${noDataColor}"></span> No Data </li>`;
-    
+
             // loop through the break values and concatenate listItems string
             for (let i = 0; i < breaks.length - 1; i++) {
-    
+
                 const color = colorize(breaks[i], breaks);
-    
+
                 // create legend item
                 const classRange = `<li><span style="background:${color}"></span>
             ${(breaks[i] * 100).toFixed()}% &mdash;
             ${(breaks[i + 1] * 100).toFixed()}%</li>`;
-    
+
                 // append to legend unordered list item
                 listItems += classRange;
             }
-    
+
             // creates the unordered list and adds the list items to i
             const unorderedList = `<ul>${listItems}</ul>`;
-    
+
             // adds the unordered list to the legend
             legend.innerHTML += unorderedList;
 
             $("#ownership").style.background = scaleColors[0];
 
-} else {
+        } else {
             // select div and create legend title
-            const legend = document.querySelector(".legend");
-            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Laws</button></div><h3><span>1989</span>States with a<br> Permit-to-Purchase Law</h3>`;
-    
+            const legend = $(".legend");
+            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Law</button></div><h3><span>1989</span>States with a<br> Permit-to-Purchase Law</h3>`;
+
             // I changed the structure here because the browser was closing the ul tag early for some reason (before the loop ran) and it was offsetting the spans in the legend.
             let unorderedList = `<ul><li><span style="background:${noDataColor}"></span> No Data </li>
             <li><span style="background:${scaleColors[0]}"></span>Has P-to-P Law</li>
             <li><span style="background:${scaleColors[1]}"></span>No P-to-P Law</li>`;
-    
+
             // adds the unordered list to the legend
             legend.innerHTML += unorderedList;
 
             $("#permit").style.background = scaleColors[0];
 
-}
+        }
 
         // References and stores gun ownership button
-        var gunOwnershipButton = document.querySelector("#ownership");
+        var gunOwnershipButton = $("#ownership");
 
-        // References and stores permit laws button
-        var permitButton = document.querySelector("#permit");
+        // References and stores Permit Law button
+        var permitButton = $("#permit");
 
-        // Toggles all shooting circle markers on after slider changes
-        gunOwnershipButton.addEventListener("click", function() {
-            currentLayer = "Gun Ownership";
+        function updateGunDataLayer() {
             drawLayers(stateGunData, leafletGeojsonObject, colorize, currentYear);
-                    // Removes pre-existing legends
-        map.removeControl(legendControl);
+            // Removes pre-existing legends
+            map.removeControl(legendControl);
             drawLegend(breaks, colorize, leafletGeojsonObject);
-            $("#ownership").style.background = scaleColors[0];
+        }
+
+        gunOwnershipButton.addEventListener("click", function () {
+            currentLayer = "Gun Ownership";
+            updateGunDataLayer();
         });
 
-        permitButton.addEventListener("click", function() {
-            currentLayer = "Permit Laws";
-            drawLayers(stateGunData, leafletGeojsonObject, colorize, currentYear);
-                    // Removes pre-existing legends
-        map.removeControl(legendControl);
-            drawLegend(breaks, colorize, leafletGeojsonObject);
-            $("#permit").style.background = scaleColors[0];
+        permitButton.addEventListener("click", function () {
+            currentLayer = "Permit Law";
+            updateGunDataLayer();
         });
 
     } // end drawLegend()
+
+    //////////////////// SLIDER UI //////////////////// 
 
     function createSliderUI(stateGunData, leafletGeojsonObject, breaks, colorize) {
 
@@ -641,7 +574,7 @@ if (currentLayer == "Gun Ownership") {
         const sliderControl = L.control({ position: "bottomleft" });
 
         // update the year
-        const year = document.querySelector("#current-year");
+        const year = $("#current-year");
 
         // when added to the map
         sliderControl.onAdd = function (map) {
@@ -661,50 +594,7 @@ if (currentLayer == "Gun Ownership") {
         // add the control to the map
         sliderControl.addTo(map);
         // select the form element
-        const slider = document.querySelector(".year-slider");
-
-    // var victimCountArray = [];
-    // for (var i = 0; i < shootings.length; i++) {
-    //     victimCountArray.push(shootings[i]['total_victims'])
-    // }
- 
-    // var maxVictims = Math.max.apply(null, victimCountArray);
-    //     // calc the diameters
-    // const largeDiameter = calcRadius(maxVictims) * 2;
-    // const smallDiameter = Number((largeDiameter / 2).toFixed(0));
-
-//   // select our circles container and set the height
-//   $(".slider-circles").style.height = `${largeDiameter.toFixed()}px`;
-
-//   // set width and height for large circle
-//   $(".slider-large").style.width = `${largeDiameter.toFixed()}px`;
-//   $(".slider-large").style.height = `${largeDiameter.toFixed()}px`;
-
-//   // set width and height for small circle and position
-//   $(".slider-small").style.width = `${smallDiameter.toFixed()}px`;
-//   $(".slider-small").style.height = `${smallDiameter.toFixed()}px`;
-//   $(".slider-small").style.top = `${largeDiameter - smallDiameter - 2}px`;
-//   $(".slider-small").style.left = `${smallDiameter / 2}px`;
-
-// $("#ui-controls").style.width = $(".slider-large").offsetWidth + $("hr.large").offsetWidth + $(".slider-large-label").offsetWidth + 10 +'px';
-
-// $("#ui-controls").style.minWidth = $("#all-shootings-toggle").offsetWidth + 100 +'px';
-
-//   // label the max and half values
-//   $(".slider-large-label").innerHTML = `${maxVictims.toLocaleString()}`;
-//   $(".slider-small-label").innerHTML = (maxVictims / 2).toLocaleString();
-
-//   // adjust the position of the label based on size of circle
-//   $(".slider-large-label").style.top = `${-11}px`;
-//   $(".slider-large-label").style.left = `${largeDiameter + 30}px`;
-
-//   // adjust the position of the label based on size of circle
-//   $(".slider-small-label").style.top = `${smallDiameter - 13}px`;
-//   $(".slider-small-label").style.left = `${largeDiameter + 30}px`;
-
-//   // insert a couple hr elements and use to connect value label to top of each circle
-//   $("hr.small").style.top = `${largeDiameter - smallDiameter - 10}px`;
-
+        const slider = $(".year-slider");
 
         // listen for changes on input element
         slider.addEventListener("input", function (e) {
@@ -715,94 +605,19 @@ if (currentLayer == "Gun Ownership") {
             // update the circle markers with current timestamp
             drawCircleMarkers(stateGunData, leafletGeojsonObject, colorize, currentYear);
             // update timestamp in legend heading
-            document.querySelector(".legend h3 span").innerHTML = currentYear;
+            $(".legend h3 span").innerHTML = currentYear;
             // update the year
             year.innerHTML = currentYear;
         });
 
         // Store 'See All Shootings' toggle button
-        var allShootingsToggleButton = document.querySelector("#all-shootings-toggle");
+        var allShootingsToggleButton = $("#all-shootings-toggle");
 
-        // Toggles all shooting circle markers on after slider changes
-        allShootingsToggleButton.addEventListener("click", function() {
+        // Toggles all shooting circle markers back on after slider changes
+        allShootingsToggleButton.addEventListener("click", function () {
             toggleAllShootings = true;
             drawCircleMarkers(stateGunData, leafletGeojsonObject, colorize, currentYear);
         });
-
-        // // References and stores gun ownership button
-        // var gunOwnershipButton = document.querySelector("#ownership");
-
-        // // References and stores permit laws button
-        // var permitButton = document.querySelector("#permit");
-
-        // // Toggles all shooting circle markers on after slider changes
-        // gunOwnershipButton.addEventListener("click", function() {
-        //     currentLayer = "Gun Ownership";
-        //     updateMap(stateGunData, leafletGeojsonObject, colorize, currentYear);
-        // });
-
-        // permitButton.addEventListener("click", function() {
-        //     currentLayer = "Permit Laws";
-        //     updateMap(stateGunData, leafletGeojsonObject, colorize, currentYear);
-        // });
-
-        // // Initiate autoplay state
-        // var autoplay;
-
-        // // Assign interval actions to autoplay
-        // autoplay = setInterval(function () {
-        //     // Store currently selected value from slider
-        //     let currentValue = Number(slider.value);
-        //     // Store target value
-        //     let nextValue = currentValue + 1;
-        //     // Validate target value
-        //     if (nextValue > Number(slider.max)) {
-        //         //if invalid, reset slider value to min value
-        //         slider.value = 1989;
-        //     } else {
-        //         // Otherwise assign new target value
-        //         slider.value = nextValue;
-        //     }
-        //     // Update map and legend with new values
-        //     updateMap(dataLayer, solarPercentage, colorize, slider.value);
-        //     document.querySelector(".legend h3 span").innerHTML = slider.value;
-        //     // Update the year in the slider
-        //     year.innerHTML = slider.value;
-        // }, 500);
-        // // Set button text to 'pause'
-        // autoplayToggle.textContent = "Pause";
-
-        // // Event handler listens for clicks on th eplay/pause button, and when clicked calls the handleAutoplayToggle callback function
-        // autoplayToggle.addEventListener("click", handleAutoplayToggle);
-
-        // Handles autoplay state logic
-        // function handleAutoplayToggle() {
-        //     // If autoplay is 'on', clears interval (pasues) and resets button text to 'Play'
-        //     if (autoplay) {
-        //         clearInterval(autoplay);
-        //         autoplay = null;
-        //         autoplayToggle.textContent = "Play";
-        //     } else {
-        //         // If autoplay is 'off' sets interval (plays), auto advances slider, and updates map accordingly
-        //         autoplay = setInterval(() => {
-        //             let currentValue = parseInt(slider.value);
-        //             let nextValue = currentValue + 1;
-        //             // Logic to advance slider value or reset value when the slider max is reached (2020)
-        //             if (nextValue > parseInt(slider.max)) {
-        //                 slider.value = 1989;
-        //             } else {
-        //                 slider.value = nextValue;
-        //             }
-        //             // Updates map based on slider's current value
-        //             updateMap(dataLayer, solarPercentage, colorize, slider.value);
-        //             // Updates legend year
-        //             document.querySelector(".legend h3 span").innerHTML = slider.value;
-        //             // Updates slider year
-        //             year.innerHTML = slider.value;
-        //         }, 500);
-        //         autoplayToggle.textContent = "Pause";
-        //     }
-        // } // end handleAutoplayToggle()
 
     } // end createSliderUI()
 
