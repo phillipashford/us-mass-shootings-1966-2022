@@ -6,10 +6,14 @@ body {
 margin: 0;
 padding: 0;
 background: rgba(193, 192, 192, 0.8);
-font-family: 'Archivo', sans-serif;
 font-family: 'Archivo Black', sans-serif;
+font-family: 'Archivo', sans-serif;
 color: #333;
 font-size: 100%;
+}
+
+a {
+  color: #840000;
 }
 
 #title, #modal-button {
@@ -61,7 +65,7 @@ width: 100%;
 height: 100%;
 overflow: auto;
 background-color: rgba(94, 94, 94, 0.8);
-font-size: 1.5em;
+
 }
 
 #modal .container {
@@ -72,6 +76,10 @@ position: relative;
 background: rgba(244, 242, 242, 0.8);
 border-radius: 5px;
 border: 1px solid grey;
+}
+
+#model p {
+  font-weight: 500;
 }
 
 #modal a {
@@ -110,9 +118,7 @@ cursor: pointer;
 }
 
 #modal h3 {
-font-family: 'Archivo Black';
 text-transform: uppercase;
-font-size: 1em;
 }
 
 .legend {
