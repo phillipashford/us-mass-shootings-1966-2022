@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Thirty Years of Solar Power in America</title>
+  <title>Patterns of Mass Shootings in the US</title>
   <!-- Scrolling past console errors after the refresh drives me mad shortly after the 100th refresh -->
   <link rel="icon" type="image/x-icon" href="https://graphics/favicon.ico">
   <!-- Should external libraries be updated? -->
@@ -17,7 +17,7 @@
 </head>
 
 <body>
-  <h1 id="title">Residential Electrical Usage from Solar: 1966 &ndash; 2020</h1>
+  <h1 id="title">Shots Fired: Mapping the Patterns of Mass Shootings in the US | 1966 &ndash; 2020</h1>
   <h2 id="modal-button">Info</h2>
   <div id="map"></div>
   <!-- <div id="hawaiiMap"></div> -->
@@ -26,7 +26,7 @@
     <input id="slider" type="range" min="1966" max="2020" value="2020" step="1" class="year-slider">
     </input>
     <span id="current-year">2020</span>
-    <button id="all-shootings-toggle">See All Shootings</button>
+    <button id="all-shootings-toggle">All Shootings 1966-2020</button>
     <!-- <div class="slider-circles position-relative">
       <div class="slider-large position-absolute"></div>
       <div class="slider-small position-absolute"></div>
@@ -41,30 +41,16 @@
       <span>
         &times;
       </span>
-      <h3>About this web map</h3>
-      <p>This interactive map allows users to explore the varied adaption of solar power in the residential energy
-        sector in the United States over time.</p>
-      <p>Programmatically dynamic color-coding helps to visualize the percentage of all of the residential electrical
-        consumption which was derived from solar power.</p>
-      <p>Immediately obvious patterns that may be apparent to users include:</p>
-      <ul>
-        <li>It seems there was earlier adoption, and it seems there are greater percentages of solar power usage, in southerly and
-          sunnier locales.</li>
-        <li>Hawaii is such an outlier (23% in 2020) that it is the only state in the top tier!</li>
-        <li>There seems to be a more rapid uptick in the years after 2010.</li>
-        <li>Seemingly all states have increased their relative solar energy usage in residential consumption during this
-          three decade period.</li>
-      </ul>
+      <h3>A Data-Driven Approach to Understanding the Impacts of Gun Laws and Gun Ownership on Mass Shooting Incidents</h3>
+      <p>Public discourse around mass shootings and firearm legislation is rife with consternation. Yet this sensitive subject is of concern to all Americans that people common spaces.</p>
+      <p>In treading into the public arena to discuss such a complex subject, one ought to have an educated opinion. And in informing oneself, the benefit of cold, hard data is undeniable.</p>
+      <hr><br>
+      <p>I built this interactive map to allows users to explore patterns arising over time between gun law data, gun ownership data, and mass shooting data, so that they can come to their own conclusions.</p>
+      <p>The data visualized in this map is certainly not comprehensive, but rather offers a limited overview of a complex matter. I encourage users to do their own research, explore the data source listed herein, and be wary of jumping to conclusions.</p>
       <h3>About the Data</h3>
       <p>
-        The energy data visualized in this map was acquired from the <a
-          href="https://www.eia.gov/opendata/browser/seds">API Dashboard</a> of the <a href="https://www.eia.gov/">US
-          Energy Information Administration</a>.</p>
-      <p>The EIA has succeeded in their mission to "[make] energy data more accessible, understandable, relevant, and
-        responsive to your needs". Their data portal and API is a great model for other governmental groups with a
-        commitment to open data.</p>
-      <p>The EIA's user-friendly API is free to the public with no account registration required.
-      </p>
+        The gun ownership* and gun law data data visualized in this map was acquired from the <a href="Programmatically dynamic color-coding helps to visualize">Rand Corporation</a> | <a href="data/TL-354-State-Level%20Estimates%20of%20Household%20Firearm%20Ownership.csv">See the data</a></p><small>* Gun ownership rates as depicted in this map are <b>estimates</b> of the proportion of adult, non-institutionalized residents who live in a household with a firearm.</small>
+      <p>The mass shooting data visualized in this map was acquired from <a href="https://www.theviolenceproject.org/">The Violence Project</a> | <a href="https://www.theviolenceproject.org/contact-us/">See the Data</a></p>
       <p>
         The state polygons were created from shapefiles retrieved from <a
           href="https://www.naturalearthdata.com/">Natural Earth</a>, an open repository offering free vector and raster
@@ -83,7 +69,9 @@
     integrity="sha512-8TVPS0EFkkmtT6yPb5K4csnSt3tjbKRrs0F8gvTNKv2OxOcwDO7+Klkz86gMVrzfqtZos5N2a+k+r9D+hlccmQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="data/violence-project-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
     <script src="js/app.js"></script>
+    
 
 </body>
 
