@@ -171,7 +171,7 @@ margin-right: 10px;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
+  padding: 0 0 10px;
 }
 
 #current-year {
@@ -265,6 +265,7 @@ margin: 0;
 
 .leaflet-popup {
   box-shadow: 0 3px 14px #777;
+  font-weight: bold;
 }
 
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
@@ -273,9 +274,6 @@ margin: 0;
 }
 
 @media (max-width: 576px) and (orientation: portrait) {
-#title, .slider-circles, .legend h3 {
-display: none;
-}
 
 .leaflet-control {
   position: revert;
@@ -304,4 +302,10 @@ font-size: 1.6rem;
 top: unset;
 left: unset;
 }
+}
+
+@media screen and (max-width: 992px) {
+  #title, .legend h3 {
+    display: none;
+    }
 }
