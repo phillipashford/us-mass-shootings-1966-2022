@@ -1,28 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Map with Leaflet</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="style.css" />
-    
-</head>
-<body>
-    <div id="map"></div>
-    <div id="legend">
-        <button id="toggle-layer">Toggle Layer</button>
-        <input type="range" id="year-slider" min="1966" max="2021" value="1966">
-        <button id="supplemental-module">Supplemental Module</button>
-    </div>
-    <!-- Include the Papa Parse library via a script tag -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.1/papaparse.min.js"></script>
+<html>
 
+<head>
+  <meta charset="utf-8" />
+  <title>Patterns of Mass Shootings in the US</title>
+  <link rel="icon" type="image/x-icon" href="https://graphics/favicon.ico">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo&family=Archivo+Black&display=swap" rel="stylesheet">
+  <link href="css/styles.css" rel="stylesheet">
+</head>
+
+<body>
+  <h1 id="title">Shots Fired: Mapping the Patterns of Mass Shootings in the US | 1966 &ndash; 2020</h1>
+  <h2 id="modal-button">Info</h2>
+  <div id="map"></div>
+  <div id="ui-controls">
+    <label for="slider"></label>
+    <input id="slider" type="range" min="1966" max="2020" value="2020" step="1" class="year-slider">
+    </input>
+    <span id="current-year">2020</span>
+    <button id="all-shootings-toggle">All Shootings 1966-2020</button>
+  </div>
+  <div id="modal">
+    <div class="container">
+      <span>
+        &times;
+      </span>
+      <h3>A Data-Driven Approach to Understanding the Impacts of Gun Laws and Gun Ownership on Mass Shooting Incidents</h3>
+      <p>Public discourse around mass shootings and firearm legislation is rife with consternation. Yet this sensitive subject is of concern to all Americans that people common spaces.</p>
+      <p>In treading into the public arena to discuss such a complex subject, one ought to have an educated opinion. And in informing oneself, the benefit of cold, hard data is undeniable.</p>
+      <hr><br>
+      <p>I built this interactive map to allows users to explore patterns arising over time between gun law data, gun ownership data, and mass shooting data, so that they can come to their own conclusions.</p>
+      <p>The data visualized in this map is certainly not comprehensive, but rather offers a limited overview of a complex matter. I encourage users to do their own research, explore the data source listed herein, and be wary of jumping to conclusions.</p>
+      <h3>About the Data</h3>
+      <p>
+        The gun ownership* and gun law data data visualized in this map was acquired from the <a href="Programmatically dynamic color-coding helps to visualize">Rand Corporation</a> | <a href="data/TL-354-State-Level%20Estimates%20of%20Household%20Firearm%20Ownership.csv">See the data</a></p><small>* Gun ownership rates as depicted in this map are <b>estimates</b> of the proportion of adult, non-institutionalized residents who live in a household with a firearm.</small>
+      <p>The mass shooting data visualized in this map was acquired from <a href="https://www.theviolenceproject.org/">The Violence Project</a> | <a href="https://www.theviolenceproject.org/contact-us/">See the Data</a></p>
+      <p>
+        The state polygons were created from shapefiles retrieved from <a
+          href="https://www.naturalearthdata.com/">Natural Earth</a>, an open repository offering free vector and raster
+        map data in the public domain.
+      </p>
+
+      <div id="modal-footer" class="footer"></div>
+    </div>
+  </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.1/papaparse.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.2/chroma.min.js"
     integrity="sha512-8TVPS0EFkkmtT6yPb5K4csnSt3tjbKRrs0F8gvTNKv2OxOcwDO7+Klkz86gMVrzfqtZos5N2a+k+r9D+hlccmQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="data/violence-project-data.js"></script>
-    <script src="app.js"></script>
+    <script src="js/app.js"></script>
+    
 </body>
+
 </html>
