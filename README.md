@@ -1,4 +1,5 @@
-# Project proposal 🚨 
+# Patterns of Mass Shootings in the US
+## A Data-Driven Approach to Understanding the Impacts of Gun Laws and Gun Ownership on Mass Shooting Incidents 
 ## TOC
 - [Data Sources](#Data-Sources)
     - [Gun Law Data](#Gun-Law-Data)
@@ -9,11 +10,9 @@
 - [Map Objectives and User Needs](#Map-objectives-and-user-needs)
 - [The Technology Stack](#The-technology-stack)
 
->Before beginning, I feel compelled to extend my sympathy that you and anyone else must be exposed to this content for the sake of assessing my work. 
+>My deepest sympathy goes out to the families of those slain in these senseless tragedies. I'm saddened to consider this subject as regularly as I have been for the sake of this project. And I am slack-jawed to see just how out of date the content has become just in the brief time I've been working on it 😢
 >
->I'm saddened to consider this subject as regularly as I have been for the sake of this project. And I am slack-jawed to see just how out of date the content has become just in the brief time I've been working on it 😢
->
->I am grateful for the professionals who regularly face the possibility of this tragic reality.
+Though it is a sorrowful subject to apply oneself to, a consideration of the data on the matter may lead to insights that could prevent such crimes in the future. Data analysis and visualization of this sort could have a direct utility in informing public opinion of legislative measures on gun control. 
 >
 >While the data can be usefully visualized and has its merit, there is no doubt that the regular exposure to this subject in the media takes a toll on all of us.
 >
