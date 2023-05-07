@@ -1,7 +1,7 @@
 {
-    "title": "A map of NMP student projects",
-    "info": "Students publish many public projects each semester. Let's show them!", 
-    "coordinates": [34.5, -94.5],
-    "author": "Folks at NMP",
-    "link": "http://newmapsplus.github.io/projects/"
+    "title": "Patterns of Mass Shootings in the US",
+    "info": "A Data-Driven Approach to Understanding the Impacts of Gun Laws and Gun Ownership on Mass Shooting Incidents", 
+    "coordinates": [36.095, -115.171],
+    "author": "Phillip Ashford",
+    "link": "https://phillipashford.github.io/us-mass-shootings-1966-2022/"
   }
