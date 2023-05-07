@@ -12,7 +12,7 @@ This interactive web map can be seen live [here](https://phillipashford.github.i
     - [Gun Law Data](#Gun-Law-Data)
     - [Gun Ownership Data](#Gun-Ownership-Data)
     - [Mass Shooting Data](#Mass-Shooting-Data)
-- [Topic and Geographic Phenomena The Map Will explore](#Topic-and-geographic-phenomena-the-map-will-explore)
+- [Topic and Geographic Phenomena The Map Explores](#Topic-and-geographic-phenomena-the-map-explores)
 - [Map Objectives and User Needs](#Map-objectives-and-user-needs)
 
 Map produced by Phillip Ashford > [Personal Portfolio](https://phillipashford.github.io/)
