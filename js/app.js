@@ -14,12 +14,12 @@
     // LINE 169 DATA PROCESSING
         // LINE 174 GUN DATA LOGIC
         // LINE 220 DATA BREAKS LOGIC
-    // LINE 244 RENDERING THE LEAFLET GEOJSON
-    // LINE 300 DRAWING THE CIRCLE MARKERS 
-    // LINE 389 DRAWING THE STATE LAYERS 
-    // LINE 476 LEAFLET CONTROLS 
-        // LINE 479 CREATE LEGEND
-        // LINE 569 CREATE SLIDER UI
+    // LINE 246 RENDERING THE LEAFLET GEOJSON
+    // LINE 302 DRAWING THE CIRCLE MARKERS 
+    // LINE 387 DRAWING THE STATE LAYERS 
+    // LINE 456 LEAFLET CONTROLS 
+        // LINE 459 CREATE LEGEND
+        // LINE 551 CREATE SLIDER UI
 
 
 
@@ -95,7 +95,7 @@
     const options = {
         center: [39.8283, -98.5795],
         zoom: 5,
-        minZoom: 5,
+        minZoom: 4,
         maxZoom: 9,
         scrollWheelZoom: true,
         zoomSnap: 0.1,
@@ -221,12 +221,12 @@
 
         //////////////////// DATA BREAKS LOGIC ////////////////////
 
-        // Create data breaks
-        var breaks = [0.034, 0.4, 0.5, 0.6, 0.7, 0.8];
-
         // Find the min and max of the solarRange array
         const hfrRangeMax = Math.max.apply(null, hfrBreaksRange);
         const hfrRangeMin = Math.min.apply(null, hfrBreaksRange);
+
+        // I created the breaks manually because chroma.js's k-means only created 2 breaks whenever I ran it, despite asking for 5. So I just manually inserted my own breaks between the max and min values.
+        var breaks = [hfrRangeMin, 0.4, 0.5, 0.6, 0.7, hfrRangeMax];
 
         // FOR INSPECTION
         // console.log(hfrBreaksRange);
@@ -305,17 +305,15 @@
     function drawCircleMarkers(stateGunData) {
 
         // remove all circle markers from the map before updating
-        map.eachLayer(function (layer) {
-            if (layer instanceof L.CircleMarker) {
-                map.removeLayer(layer);
-            }
-        });
+        map.eachLayer(layer => layer instanceof L.CircleMarker ? map.removeLayer(layer) : null);
 
         shootings.forEach(shooting => {
             const date = new Date(shooting['date']).getFullYear();
             var circleMarker;
             // I'm using the logic immediately below to add a class name to the markers whose incidents include a summary. Initially I was going to change the color of these markers to offer the user an affordance but I think the user might confuse it with a data measurement. I played around with animations but they were not subtle enough.
-            var className = (shooting['summary']) ? "summary " : "";
+            var className = (shooting['summary']) ? "summary " : null;
+
+            // Default options for all circle markers
             var options = {
                 radius: calcRadius(shooting['total_victims']),
                 color: "#840000",
@@ -337,8 +335,6 @@
                 if (date == currentYear) {
                     // Create a circle marker and add it to the map
                     circleMarker = L.circleMarker([shooting['coordinates'][0], shooting['coordinates'][1]], options).addTo(map);
-                } else {
-
                 }
             }
 
@@ -400,7 +396,9 @@
             var fillColor = noDataColor;
             var stateLineColor = defaultStateLineColor;
             var props = layer.feature.properties;
-            var popup = ``;
+            // Default popup for instances of no data
+            var popup = `<h1>${currentLayer} in ${props.NAME}</h1>
+            <h3>${currentYear}: No data</h3>`;
 
             // if the currentLayer is 'Gun Ownership'
             if (currentLayer == 'Gun Ownership') {
@@ -411,20 +409,11 @@
                         // then style as...
                         fillColor = colorize(Number(stateGunData[props.NAME][currentYear].HFR))
                         // and configure popup
-                        popup +=
+                        popup =
                             `<h1>${currentLayer} in ${props.NAME}</h1>
                             <h2>${currentYear} | ${((stateGunData[props.NAME][currentYear].HFR) * 100).toFixed()}%  *</h2>
                     <h5>* Estimate of the proportion of adult, non-institutionalized residents who live in a household with a firearm. <a href="">Learn more</a></h5>`;
-
-                    } else { // if no HFR data
-                        popup +=
-                            `<h1>${currentLayer} in ${props.NAME}</h1>
-                        <h3>${currentYear}: No data</h3>`;
                     }
-                } else { // if no gun law data (DC, Puerto Rico, etc)
-                    popup +=
-                        `<h1>${currentLayer} in ${props.NAME}</h1>
-                    <h3>${currentYear}: No data</h3>`;
                 }
 
             } else { // if the currentLayer is not 'Gun Ownership'
@@ -433,7 +422,6 @@
                 if (stateGunData[props.NAME] && stateGunData[props.NAME][currentYear]) {
                     // and if the state has a 'permit-to-purchase' law... 
                     if (stateGunData[props.NAME][currentYear].PERMIT != undefined) {
-                        // stateLineColor = 'black';
                         if (stateGunData[props.NAME][currentYear].PERMIT == true) {
                             // then style as...
                             fillColor = scaleColors[0];
@@ -448,24 +436,14 @@
                             <h2>Has Permit-to-Purchase law: 
                             ${(stateGunData[props.NAME][currentYear].PERMIT == true) ? `Yes` : `No`}
                             </h2>`;
-                    } else { // if no permit law data
-                        popup +=
-                            `<h1>${currentLayer} in ${props.NAME}</h1>
-                        <h3>${currentYear}: No data</h3>`;
                     }
-                } else { // if no gun law data (DC, Puerto Rico, etc)
-                    popup +=
-                        `<h1>${currentLayer} in ${props.NAME}</h1>
-                    <h3>${currentYear}: No data</h3>`;
                 }
             }
-
 
             // Send options to Leaflet's setStyle function
             layer.setStyle({
                 fillColor: fillColor,
                 stateLineColor: stateLineColor
-
             });
 
             // Add a popup to the layer with additional information
@@ -501,7 +479,6 @@
             const legend = $(".legend");
             legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Law</button></div><h3><span>1989</span>Residents living in a<br> household with a firearm</h3>`;
 
-            // I changed the structure here because the browser was closing the ul tag early for some reason (before the loop ran) and it was offsetting the spans in the legend.
             let listItems = `<li><span style="background:${noDataColor}"></span> No Data </li>`;
 
             // loop through the break values and concatenate listItems string
@@ -518,20 +495,20 @@
                 listItems += classRange;
             }
 
-            // creates the unordered list and adds the list items to i
+            // creates the unordered list and adds the list items to it
             const unorderedList = `<ul>${listItems}</ul>`;
 
             // adds the unordered list to the legend
             legend.innerHTML += unorderedList;
 
+            // Changes bg color of selected layer button to indicate selection
             $("#ownership").style.background = scaleColors[0];
 
-        } else {
+        } else { // current layers is gun permits layer
             // select div and create legend title
             const legend = $(".legend");
             legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Law</button></div><h3><span>1989</span>States with a<br> Permit-to-Purchase Law</h3>`;
 
-            // I changed the structure here because the browser was closing the ul tag early for some reason (before the loop ran) and it was offsetting the spans in the legend.
             let unorderedList = `<ul><li><span style="background:${noDataColor}"></span> No Data </li>
             <li><span style="background:${scaleColors[0]}"></span>Has P-to-P Law</li>
             <li><span style="background:${scaleColors[1]}"></span>No P-to-P Law</li>`;
@@ -539,6 +516,7 @@
             // adds the unordered list to the legend
             legend.innerHTML += unorderedList;
 
+            // Changes bg color of selected layer button to indicate selection
             $("#permit").style.background = scaleColors[0];
 
         }
@@ -550,9 +528,11 @@
         var permitButton = $("#permit");
 
         function updateGunDataLayer() {
+            //updates state layers
             drawLayers(stateGunData, leafletGeojsonObject, colorize, currentYear);
-            // Removes pre-existing legends
+            // Removes pre-existing legend
             map.removeControl(legendControl);
+            // draws new legend
             drawLegend(breaks, colorize, leafletGeojsonObject);
         }
 
@@ -602,9 +582,9 @@
         slider.addEventListener("input", function (e) {
             // get the value of the selected option
             currentYear = e.target.value;
-            // update the layers with current timestamp
+            // update the state layers with selected year
             drawLayers(stateGunData, leafletGeojsonObject, colorize, currentYear);
-            // update the circle markers with current timestamp
+            // update the circle markers with selected year
             drawCircleMarkers(stateGunData, leafletGeojsonObject, colorize, currentYear);
             // update timestamp in legend heading
             $(".legend h3 span").innerHTML = currentYear;
@@ -615,12 +595,11 @@
         // Store 'See All Shootings' toggle button
         var allShootingsToggleButton = $("#all-shootings-toggle");
 
-        // Toggles all shooting circle markers back on after slider changes
+        // Toggles all circle markers back on after slider changes
         allShootingsToggleButton.addEventListener("click", function () {
             toggleAllShootings = true;
             drawCircleMarkers(stateGunData, leafletGeojsonObject, colorize, currentYear);
         });
-
     } // end createSliderUI()
 
 })();
