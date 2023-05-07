@@ -431,7 +431,7 @@
                             fillColor = scaleColors[1];
                         }
                         // and configure popup
-                        popup +=
+                        popup =
                             `<h1>${currentLayer} in ${props.NAME}</h1>
                             <h2>Has Permit-to-Purchase law: 
                             ${(stateGunData[props.NAME][currentYear].PERMIT == true) ? `Yes` : `No`}
