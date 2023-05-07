@@ -398,7 +398,7 @@
             var props = layer.feature.properties;
             // Default popup for instances of no data
             var popup = `<h1>${currentLayer} in ${props.NAME}</h1>
-            <h3>${currentYear}: No data</h3>`;
+            <h2>${currentYear}: No data</h2>`;
 
             // if the currentLayer is 'Gun Ownership'
             if (currentLayer == 'Gun Ownership') {
