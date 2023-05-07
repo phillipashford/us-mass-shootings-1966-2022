@@ -46,7 +46,7 @@
         const date = new Date();
         const year = date.getFullYear();
         const month = date.toLocaleString('default', { month: 'long' });
-        modalFooter.textContent = ` Phillip Ashford | ${month}, ${year}`;
+        modalFooter.textContent = `<a href="https://github.com/phillipashford">Phillip Ashford</a> | ${month}, ${year}`;
     }
 
     // display modal when button is clicked
