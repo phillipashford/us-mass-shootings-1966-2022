@@ -4,6 +4,8 @@
 
 ![Screenshot of the map](img/screenshot.png)
 
+This interactive web map can be seen live [here](https://phillipashford.github.io/us-mass-shootings-1966-2022/).
+
 ## Table of Contents
 
 - [Data Sources](#Data-Sources)
@@ -12,6 +14,8 @@
     - [Mass Shooting Data](#Mass-Shooting-Data)
 - [Topic and Geographic Phenomena The Map Will explore](#Topic-and-geographic-phenomena-the-map-will-explore)
 - [Map Objectives and User Needs](#Map-objectives-and-user-needs)
+
+Map produced by Phillip Ashford > [Personal Portfolio](https://phillipashford.github.io/)
 
 ## Data Sources
 
