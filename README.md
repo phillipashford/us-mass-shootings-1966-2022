@@ -24,7 +24,7 @@ Map produced by Phillip Ashford > [Personal Portfolio](https://phillipashford.gi
 
 ### Gun Law Data
 
-The gun law data used in this project was obtained from the [Rand Corporation](https://www.rand.org/pubs/tools/TL354.html). This database contains state-level information on background check laws and permit to purchase laws, along with estimates of household firearm ownership from 1980 to 2015.
+The gun law data used in this project was obtained from the [Rand Corporation](https://www.rand.org/pubs/tools/TL354.html). This database contains state-level information on background check laws and permit to purchase laws from 1980 to 2015.
 
 ### Gun Ownership Data
 
@@ -40,7 +40,7 @@ Mass shooting data was acquired from [The Violence Project (TVP)](https://www.th
 
 This project aims to explore potential patterns in mass shooting incidents, gun laws, and gun ownership across the United States from 1966 to 2021. The goal is to provide insights into possible correlations between these factors and build awareness of the increases in mass shootings over time.
 
-The project primarily focuses on the geographic patterns of mass shootings in the US. It uses prop symbols to visualize shooting incidents and choropleth layers to visualize gun laws and gun ownership rates. Featured incidents are highlighted using icons and can be explored through popups or info boxes displaying additional information.
+The project primarily focuses on the geographic patterns of mass shootings in the US. It uses prop symbols to visualize shooting incidents and choropleth layers to visualize gun laws and gun ownership rates. Incidents can be explored through popups or info boxes displaying additional information.
 
 ## Map Objectives and User Needs
 
