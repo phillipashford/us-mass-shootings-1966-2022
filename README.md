@@ -14,6 +14,7 @@ This interactive web map can be seen live [here](https://phillipashford.github.i
     - [Mass Shooting Data](#Mass-Shooting-Data)
 - [Topic and Geographic Phenomena The Map Explores](#Topic-and-geographic-phenomena-the-map-explores)
 - [Map Objectives and User Needs](#Map-objectives-and-user-needs)
+- [Data Flow Diagram](#data-flow-diagram)
 
 Map produced by Phillip Ashford > [Personal Portfolio](https://phillipashford.github.io/)
 
@@ -55,3 +56,9 @@ This map aims to:
 - Explore any potential correlation between mass shootings and gun ownership/gun laws.
 
 In addition to the main map, data sources are available through a modal, offering users further context and information.
+
+## Data Flow Diagram
+
+[^](#table-of-contents)
+
+![JavaScript Data Flow Diagram](img/mass-shooting-dfd.png)
