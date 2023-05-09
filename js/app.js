@@ -477,7 +477,7 @@
         if (currentLayer == "Gun Ownership") {
             // select div and create legend title
             const legend = $(".legend");
-            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Law</button></div><h3><span>1989</span>Residents living in a<br> household with a firearm</h3>`;
+            legend.innerHTML = `<div class="button-container"><button id="ownership">Gun Ownership</button><button id="permit">Permit Law</button></div><h3><span>2020</span>Residents living in a<br> household with a firearm</h3>`;
 
             let listItems = `<li><span style="background:${noDataColor}"></span> No Data </li>`;
 
